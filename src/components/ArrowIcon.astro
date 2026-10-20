@@ -1,0 +1,28 @@
+---
+/*
+  The wayfinding arrow: a 1.5px line with an open head. Takes its colour from
+  `currentColor` and its length from `width` (height follows the ratio).
+*/
+interface Props {
+  width?: number;
+  class?: string;
+}
+const { width = 24, class: className } = Astro.props;
+const height = Math.round(width * 0.5);
+---
+
+<svg
+  class={className}
+  width={width}
+  height={height}
+  viewBox="0 0 24 12"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="square"
+  stroke-linejoin="miter"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d="M0 6h22.5M17.5 1l5 5-5 5"></path>
+</svg>

@@ -1,0 +1,168 @@
+---
+/*
+  The sticky action bar (phones only, below 768px). Specified in the Creative Direction, section B.
+
+    [ Request a price ]   WhatsApp   Call
+
+  It is the phone's stand-in for the header CTA: it appears once the hero starter has scrolled out, and
+  hides again while the closing starter is on screen (or behind the visitor), while a field is focused
+  (the on-screen keyboard is up) and while the menu sheet is open. It is only rendered by the homepage,
+  so it never appears on /request.
+
+  Call and WhatsApp follow the site-wide placeholder rule (data/site.ts): until a real value exists the
+  cell is not rendered, so the bar never prints or links an invented number. With neither supplied the
+  bar is the Request button alone.
+*/
+import { site } from '../data/site';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+const phoneHref = site.contact.phone.tel ? `tel:${site.contact.phone.tel}` : null;
+const whatsappHref = site.contact.whatsapp.url;
+---
+
+<div class="action-bar" data-action-bar>
+  <a class="request" href={localePath(lang, '/request/')}>{t.nav.cta}</a>
+  {whatsappHref && <a class="aux" href={whatsappHref} target="_blank" rel="noopener">{t.contact.whatsapp}</a>}
+  {phoneHref && <a class="aux" href={phoneHref}>{t.nav.callShort}</a>}
+</div>
+
+<style>
+  .action-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40; /* under the header (50) and the menu sheet (49) */
+    display: none;
+    align-items: stretch;
+    gap: 0;
+    box-sizing: border-box;
+    height: var(--action-bar-h); /* the same token the page's bottom offset uses */
+    padding: 8px var(--grid-margin) calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--stone);
+    box-shadow: inset 0 1px 0 var(--hairline);
+    visibility: hidden;
+    transform: translateY(100%);
+    transition:
+      transform var(--dur-header) var(--ease),
+      visibility 0s linear var(--dur-header);
+  }
+  .action-bar[data-visible] {
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+  @media (max-width: 767px) {
+    .action-bar {
+      display: flex;
+    }
+    /* the full-screen menu owns the screen */
+    :global(html.is-locked) .action-bar {
+      display: none;
+    }
+    /* While the bar is up the page ends above it, so nothing at the very end of the document can sit underneath. */
+    :global(html.has-action-bar) :global(body) {
+      padding-bottom: var(--action-bar-h);
+    }
+  }
+
+  .request,
+  .aux {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .request {
+    flex: 1 1 auto;
+    padding-inline: 16px;
+    background: var(--graphite);
+    color: var(--bone);
+    border-radius: var(--radius-ctl);
+    font-size: 0.8125rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .request:active {
+    background: var(--graphite-press);
+  }
+  .aux {
+    flex: none;
+    padding-inline: 14px;
+    font-size: var(--fs-small);
+    font-weight: var(--weight-medium);
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .aux:active {
+    background: var(--stone-2);
+  }
+  .aux:last-child {
+    margin-right: -14px; /* the text, not its padding, sits on the grid margin */
+  }
+  .request + .aux {
+    margin-left: 4px;
+  }
+  .aux + .aux {
+    border-left: 1px solid var(--hairline);
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-action-bar]');
+  const hero = document.querySelector<HTMLElement>('[data-hero-starter]');
+  const closing = document.querySelector<HTMLElement>('[data-closing-starter]');
+
+  if (bar && hero) {
+    let typing = false;
+
+    const header = document.querySelector<HTMLElement>('[data-header]');
+
+    // Measured on scroll, not with IntersectionObserver: an observer only reports when a box starts or stops
+    // intersecting, so a fast fling or an anchor jump straight past the closing starter would never be noticed.
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const offset = header?.offsetHeight ?? 0;
+      // shown once the hero starter has scrolled away above the viewport…
+      const heroGone = hero.getBoundingClientRect().bottom < offset;
+      // …and gone once the closing starter has arrived (or been passed): it is the last conversion moment
+      const closingReached = closing ? closing.getBoundingClientRect().top < window.innerHeight : false;
+      const show = heroGone && !closingReached && !typing;
+      bar.toggleAttribute('data-visible', show);
+      bar.toggleAttribute('inert', !show); // hidden means out of the tab order too
+      document.documentElement.classList.toggle('has-action-bar', show);
+    };
+    const schedule = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+    update();
+
+    // On-screen keyboard: a focused field means the keyboard is (about to be) open.
+    const isField = (el: EventTarget | null) => el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+    document.addEventListener('focusin', (e) => {
+      if (isField(e.target)) {
+        typing = true;
+        schedule();
+      }
+    });
+    document.addEventListener('focusout', () => {
+      typing = false;
+      schedule();
+    });
+  }
+</script>

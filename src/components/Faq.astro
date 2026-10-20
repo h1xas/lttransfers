@@ -1,0 +1,344 @@
+---
+/*
+  FAQ: "Questions travellers ask".
+
+  The dense counterpart to "Where we go": the same stone and the same 2px section rule, but
+  small type (20px questions against 48px service names), 64–72px rows and an accordion. Hairline
+  rows only: no cards, boxes, icons in circles, shadows or illustration.
+
+  Desktop (≥1100px): heading + contact on c1–4 (sticky at 96px), hairline list on c6–12.
+  Tablet / phone: heading, then the list, then the contact block AFTER the questions: the visitor
+  reaches the answers before being asked to get in touch. Not sticky.
+
+  Markup: each question is an <h3> holding one real <button aria-expanded aria-controls>; the answer is
+  a sibling group the button controls. Several answers can be open at once; the first starts open.
+  The reveal is a 0fr → 1fr grid-row transition (no hard-coded heights) plus opacity and a 4px translate.
+  Without JavaScript every answer is shown (see <noscript>), so the content is always in the HTML.
+
+  Content lives in data/ui.ts (`faq.items`). Only `confirmed` items render.
+*/
+import FaqContact from './FaqContact.astro';
+import type { Lang } from '../data/ui';
+import { getUi } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const f = t.faq;
+const items = f.items.filter((item) => item.status === 'confirmed');
+---
+
+<section class="faq" aria-labelledby="faq-title" data-faq>
+  <div class="page-grid">
+    <div class="head-rule" aria-hidden="true"></div>
+
+    <div class="rail">
+      <h2 id="faq-title">{f.title}</h2>
+      <div class="contact-rail">
+        <FaqContact lang={lang} />
+      </div>
+    </div>
+
+    <ul role="list" class="list">
+      {
+        items.map((item, i) => {
+          const open = i === 0;
+          return (
+            <li class:list={['item', { 'is-open': open }]} data-faq-item>
+              <h3 class="q">
+                <button
+                  type="button"
+                  class="trigger"
+                  id={`faq-q-${item.key}`}
+                  aria-expanded={open ? 'true' : 'false'}
+                  aria-controls={`faq-a-${item.key}`}
+                  data-faq-trigger
+                >
+                  <span class="q-text">{item.question}</span>
+                  <span class="mark" aria-hidden="true" />
+                </button>
+              </h3>
+              <div class="panel" id={`faq-a-${item.key}`} role="group" aria-labelledby={`faq-q-${item.key}`} data-faq-panel>
+                <div class="panel-inner">
+                  <p class="answer">{item.answer}</p>
+                </div>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+
+    <div class="contact-after">
+      <FaqContact lang={lang} />
+    </div>
+  </div>
+
+  <noscript>
+    <style is:inline>
+      [data-faq-panel] {
+        grid-template-rows: 1fr !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      [data-faq-panel] .answer {
+        transform: none !important;
+      }
+      [data-faq-trigger] {
+        cursor: default;
+        pointer-events: none;
+      }
+      [data-faq-trigger] .mark {
+        display: none;
+      }
+    </style>
+  </noscript>
+</section>
+
+<script>
+  // Progressive enhancement only: toggles aria-expanded and the item's open state. Answers are already in the HTML.
+  document.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(open));
+      button.closest('[data-faq-item]')?.classList.toggle('is-open', open);
+    });
+  });
+</script>
+
+<style>
+  /*
+    The preceding section carries its own 88–150px of bottom padding, so this one starts on its rule.
+    Bottom padding is deliberately modest: the dark closing band that follows brings its own generous
+    top padding, so the page never gets a double gap.
+  */
+  .faq {
+    background: var(--stone);
+    color: var(--graphite);
+    padding-block: 0 clamp(56px, 6.7vw, 96px);
+  }
+
+  /* The same 2px graphite rule that carries "Where we go" and the certainty section. */
+  .head-rule {
+    grid-column: 1 / -1;
+    height: 2px;
+    background: var(--graphite);
+  }
+
+  /* ---------- Heading (phone / tablet: simply the heading above the list) ---------- */
+  .rail {
+    grid-column: 1 / -1;
+    padding-top: var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  h2 {
+    font-size: 1.75rem;
+    line-height: 1.1;
+    letter-spacing: var(--track-display);
+  }
+  .contact-rail {
+    display: none;
+  }
+
+  /* ---------- Hairline list ---------- */
+  .list {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--hairline);
+  }
+  .item {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .q {
+    font-size: inherit;
+    font-weight: inherit;
+    text-wrap: initial;
+  }
+
+  .trigger {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-3);
+    align-items: center;
+    min-height: 56px;
+    /* Full-bleed on phone / tablet so the pressed tint spans the screen; text stays on the grid margin. */
+    margin-inline: calc(var(--grid-margin) * -1);
+    width: calc(100% + var(--grid-margin) * 2);
+    padding: 17px var(--grid-margin);
+    border: 0;
+    background: none;
+    color: var(--graphite);
+    font-size: 1.125rem;
+    font-weight: var(--weight-medium);
+    /* whole pixels, so rows and the 1.5px mark land on whole pixels and stay crisp */
+    line-height: 24px;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .trigger:active {
+    background: var(--stone-2);
+  }
+  .trigger:focus-visible {
+    outline-offset: -2px;
+  }
+  .q-text {
+    text-wrap: pretty;
+  }
+
+  /* + that becomes −: two 1.5px bars (the wayfinding arrow's stroke); the upright one turns flat. */
+  .mark {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    color: color-mix(in srgb, var(--pine) 68%, transparent);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .mark::before,
+  .mark::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6.25px;
+    width: 14px;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .mark::after {
+    transform: rotate(90deg);
+  }
+  .is-open .mark {
+    color: var(--pine);
+  }
+  .is-open .mark::after {
+    transform: rotate(0deg);
+  }
+
+  /* ---------- Answer: intrinsic-height reveal ---------- */
+  .panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      grid-template-rows var(--dur-fast) var(--ease),
+      opacity var(--dur-fast) var(--ease),
+      visibility 0s linear var(--dur-fast);
+  }
+  .is-open .panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+  .panel-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .answer {
+    max-width: 38rem;
+    padding: 0 calc(14px + var(--space-3)) 22px 0;
+    color: var(--graphite-2);
+    font-size: var(--fs-body);
+    line-height: 25px;
+    text-wrap: pretty;
+    transform: translateY(-4px);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .is-open .answer {
+    transform: none;
+  }
+
+  /* ---------- Contact after the questions (phone / tablet) ---------- */
+  .contact-after {
+    grid-column: 1 / -1;
+    margin-top: var(--space-5);
+  }
+
+  @media (hover: hover) {
+    .trigger:hover .mark {
+      color: var(--pine);
+    }
+  }
+
+  /* No travelling parts: answers simply show and hide. */
+  @media (prefers-reduced-motion: reduce) {
+    .panel,
+    .answer,
+    .mark::before,
+    .mark::after {
+      transition: none;
+    }
+    .answer {
+      transform: none;
+    }
+  }
+
+  /* ---------- Tablet ---------- */
+  @media (min-width: 768px) {
+    h2 {
+      font-size: 2rem;
+    }
+    .rail {
+      padding-top: var(--space-5);
+      margin-bottom: var(--space-4);
+    }
+    .trigger {
+      min-height: 0;
+      padding-block: 21px;
+      font-size: 1.25rem;
+      line-height: 26px;
+    }
+    .answer {
+      padding-bottom: 28px;
+      line-height: 26px;
+    }
+    .contact-after {
+      max-width: 32rem;
+    }
+  }
+
+  /* ---------- Desktop: rail c1–4 (sticky) · questions c6–12 ---------- */
+  @media (min-width: 1100px) {
+    .rail {
+      grid-column: 1 / 5;
+      grid-row: 2;
+      align-self: start;
+      position: sticky;
+      top: 96px;
+      /* the heading's cap line sits level with the first question's text */
+      padding-top: 22px;
+      margin-bottom: 0;
+    }
+    .contact-rail {
+      display: block;
+      margin-top: var(--space-5);
+    }
+    /* the section rule is the list's top edge: no second hairline under it */
+    .list {
+      grid-column: 6 / -1;
+      grid-row: 2;
+      border-top: 0;
+    }
+    .contact-after {
+      display: none;
+    }
+
+    /* Question and answer share a 12px inset so the focus ring has room around the text instead of cutting through it. */
+    .trigger {
+      margin-inline: 0;
+      width: 100%;
+      padding-inline: 12px;
+    }
+    .trigger:active {
+      background: none;
+    }
+    .answer {
+      padding-left: 12px;
+      padding-bottom: 30px;
+    }
+  }
+</style>

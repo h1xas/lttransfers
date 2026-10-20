@@ -1,0 +1,628 @@
+---
+import ArrowIcon from './ArrowIcon.astro';
+import ContactLink from './ContactLink.astro';
+import { site } from '../data/site';
+import { languages, langs, type Lang } from '../data/ui';
+import { getUi, localePath, stripLocale } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+  /**
+   * 'after-hero': the CTA appears once the hero booking starter has left the viewport.
+   * 'always':     visible from the start (pages without a hero starter).
+   * 'off':        never (the request page itself).
+   */
+  cta?: 'after-hero' | 'always' | 'off';
+}
+
+const { lang, cta = 'always' } = Astro.props;
+const t = getUi(lang);
+
+const pathname = Astro.url.pathname;
+const home = localePath(lang, '/');
+const requestHref = localePath(lang, '/request/');
+
+const items = t.nav.items.map((item) => {
+  const href = localePath(lang, item.path);
+  return { ...item, href, current: pathname.startsWith(href) };
+});
+
+// The desktop bar carries the four services only; Cars and How it works live in the mobile menu and footer.
+const primaryItems = items.filter((item) => ['airport', 'business', 'long', 'cross'].includes(item.key));
+
+const switchTo = langs.map((l) => ({
+  lang: l,
+  short: languages[l].short,
+  label: languages[l].label,
+  htmlLang: languages[l].htmlLang,
+  href: localePath(l, stripLocale(pathname)),
+  current: l === lang,
+}));
+const current = switchTo.find((l) => l.current)!;
+---
+
+<header class="site-header" data-header data-cta-mode={cta}>
+  <div class="bar page-grid">
+    <a class="wordmark" href={home}>{t.siteName}</a>
+
+    <nav class="primary-nav" aria-label={t.a11y.primaryNav}>
+      <ul role="list">
+        {
+          primaryItems.map((item) => (
+            <li>
+              <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="tools">
+      <span class="phone">
+        <svg class="handset" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter" aria-hidden="true" focusable="false">
+          <path d="M6 3h3.5l1.5 4.5-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L21 14.5V18a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"></path>
+        </svg>
+        <ContactLink kind="phone" shortLabel={t.nav.callShort} />
+      </span>
+
+      <nav class="lang" aria-label={t.a11y.languageNav}>
+        {
+          switchTo.map((l, i) => (
+            <>
+              {i > 0 && <span class="lang-sep" aria-hidden="true">·</span>}
+              <a
+                href={l.href}
+                hreflang={l.htmlLang}
+                lang={l.htmlLang}
+                aria-current={l.current ? 'true' : undefined}
+                title={l.label}
+              >
+                {l.short}
+              </a>
+            </>
+          ))
+        }
+      </nav>
+
+      <div class="lang-pick" data-lang-pick>
+        <button class="lang-pick-btn" type="button" aria-expanded="false" aria-controls="lang-pick-list" aria-label={`${t.a11y.languageNav}: ${current.label}`} data-lang-toggle>
+          <span>{current.short}</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+            <path d="M1 1l4 4 4-4"></path>
+          </svg>
+        </button>
+        <ul class="lang-pick-list" id="lang-pick-list" role="list" hidden>
+          {
+            switchTo.map((l) => (
+              <li>
+                <a href={l.href} hreflang={l.htmlLang} lang={l.htmlLang} aria-current={l.current ? 'true' : undefined}>
+                  <span class="code">{l.short}</span>
+                  <span class="name">{l.label}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      {
+        cta !== 'off' && (
+          <div class="cta-wrap" data-header-cta data-visible={cta === 'always' ? '' : undefined}>
+            <a class="cta" href={requestHref}>
+              <span>{t.nav.cta}</span>
+              <ArrowIcon class="cta-arrow" width={18} />
+            </a>
+          </div>
+        )
+      }
+
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-menu"
+        data-menu-toggle
+        data-label-open={t.nav.closeMenu}
+        data-label-closed={t.nav.menu}
+      >
+        <span data-menu-label>{t.nav.menu}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="menu-sheet" id="site-menu" role="dialog" aria-modal="true" aria-label={t.nav.menuLabel} data-menu hidden>
+    <div class="menu-inner">
+      <ul role="list" class="menu-links">
+        {
+          items.map((item) => (
+            <li>
+              <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <ul role="list" class="menu-contact">
+        <li><ContactLink kind="phone" /></li>
+        <li><ContactLink kind="whatsapp" /></li>
+      </ul>
+      <p class="menu-operator">{site.operator}</p>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    --h: var(--header-h);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--h);
+    /* Keeps the page from shifting when the bar shrinks: the lost height is handed back as margin. */
+    margin-bottom: calc(var(--header-h) - var(--h));
+    background: var(--stone);
+    box-shadow: inset 0 -1px 0 transparent;
+    transition:
+      height var(--dur-header) var(--ease),
+      margin-bottom var(--dur-header) var(--ease),
+      box-shadow var(--dur-header) var(--ease);
+  }
+  .site-header[data-scrolled] {
+    --h: var(--header-h-scrolled);
+    box-shadow: inset 0 -1px 0 var(--hairline);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: var(--grid-gutter);
+  }
+
+  .wordmark {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: var(--weight-medium);
+    font-size: 1.1875rem;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* ---------- Primary navigation (desktop) ---------- */
+  .primary-nav {
+    display: none;
+  }
+  .primary-nav ul {
+    display: flex;
+    gap: 28px;
+    margin: 0;
+  }
+  .primary-nav a {
+    position: relative;
+    display: block;
+    padding-block: 8px;
+    font-size: 0.9375rem;
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .primary-nav a::after,
+  .menu-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 2px;
+    background: var(--pine);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .primary-nav a:hover::after,
+  .primary-nav a[aria-current]::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------- Tools: phone, language, CTA, menu ---------- */
+  .tools {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+  .phone {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    margin-right: 24px;
+  }
+  .phone :global(.handset) {
+    flex: none;
+    color: var(--graphite-2);
+  }
+  .phone :global(.contact-short) {
+    display: none;
+  }
+  /* Between 1100 and 1360px there is no room for the full number next to the CTA. */
+  @media (max-width: 1359px) {
+    .phone :global(.contact-full) {
+      display: none;
+    }
+    .phone :global(.contact-short) {
+      display: inline;
+    }
+  }
+  /* Below 1200px the two languages collapse into a small dropdown (.lang-pick); the inline pair is desktop only. */
+  .lang {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9375rem;
+    font-weight: var(--weight-medium);
+  }
+  .lang a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding-inline: 4px;
+    color: var(--graphite-2);
+    text-decoration: none;
+  }
+  .lang a[aria-current] {
+    color: var(--graphite);
+  }
+  .lang a:hover {
+    color: var(--graphite);
+  }
+  .lang-sep {
+    color: var(--graphite-2);
+  }
+
+  /* ---------- Language dropdown (below 1200px) ---------- */
+  .lang-pick {
+    position: relative;
+  }
+  .lang-pick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--tap);
+    padding-inline: 4px;
+    background: transparent;
+    border: 0;
+    color: var(--graphite);
+    font-size: 0.9375rem;
+    font-weight: var(--weight-medium);
+  }
+  .lang-pick-btn .chevron {
+    flex: none;
+    color: var(--graphite-2);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .lang-pick-btn[aria-expanded='true'] .chevron {
+    transform: rotate(180deg);
+  }
+  .lang-pick-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 51;
+    min-width: 148px;
+    margin: 0;
+    padding: 4px;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-ctl);
+  }
+  .lang-pick-list[hidden] {
+    display: none;
+  }
+  .lang-pick-list a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--tap);
+    padding-inline: 12px;
+    color: var(--graphite-2);
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+  .lang-pick-list a[aria-current] {
+    color: var(--graphite);
+    font-weight: var(--weight-medium);
+  }
+  .lang-pick-list .code {
+    min-width: 1.5em;
+  }
+
+  .cta-wrap {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 72px;
+    height: 40px;
+    margin-left: 12px;
+    padding-inline: 14px;
+    background: transparent;
+    border: 1px solid var(--graphite);
+    border-radius: var(--radius-ctl);
+    font-size: 0.9375rem;
+    font-weight: var(--weight-medium);
+  }
+  .menu-toggle::after {
+    /* tap target ≥ 48px without a taller box */
+    content: '';
+    position: absolute;
+    inset: -4px -4px;
+  }
+  .menu-toggle[aria-expanded='true'] {
+    background: var(--graphite);
+    color: var(--bone);
+  }
+
+  /* ---------- Mobile menu sheet ---------- */
+  .menu-sheet {
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    z-index: 49;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--stone);
+    border-top: 1px solid var(--hairline);
+  }
+  .menu-sheet[hidden] {
+    display: none;
+  }
+  .menu-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: var(--space-3) var(--grid-margin) var(--space-5);
+  }
+  .menu-links a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 1.75rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .menu-links a::after {
+    bottom: -1px;
+  }
+  .menu-links a[aria-current]::after {
+    transform: scaleX(1);
+  }
+  .menu-contact {
+    margin-top: auto;
+    padding-top: var(--space-5);
+  }
+  .menu-contact li {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: 1.125rem;
+    font-weight: var(--weight-medium);
+    color: var(--graphite);
+  }
+  .menu-contact :global(.is-placeholder) {
+    color: var(--graphite-2);
+  }
+  .menu-operator {
+    margin-top: var(--space-3);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--hairline);
+    color: var(--graphite-2);
+    font-size: var(--fs-small);
+  }
+
+  /* ---------- Tablet and up: the CTA joins the bar once the hero starter has left (phones use the action bar) ---------- */
+  @media (min-width: 768px) {
+    .cta-wrap {
+      display: block;
+      max-width: 0;
+      padding-left: 0;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      white-space: nowrap;
+      transition:
+        max-width var(--dur-header) var(--ease),
+        padding-left var(--dur-header) var(--ease),
+        opacity var(--dur-header) var(--ease),
+        visibility 0s linear var(--dur-header);
+    }
+    .cta-wrap[data-visible] {
+      max-width: 240px;
+      padding-left: 24px;
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 42px;
+      padding-inline: 16px;
+      background: var(--graphite);
+      color: var(--bone);
+      border-radius: var(--radius-ctl);
+      font-size: 0.9375rem;
+      font-weight: var(--weight-medium);
+      text-decoration: none;
+      transition: background-color var(--dur-fast) var(--ease);
+    }
+    .cta:hover {
+      background: var(--graphite-hover);
+    }
+    .cta:active {
+      background: var(--graphite-press);
+    }
+    .cta-arrow {
+      transition: transform var(--dur-fast) var(--ease);
+    }
+    .cta:hover .cta-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  /* ---------- Desktop: full navigation from 1200px ---------- */
+  @media (min-width: 1200px) {
+    .primary-nav {
+      display: block;
+      /* links drift right as the screen widens (capped: the bar also holds four links, the number, language and CTA) */
+      margin-left: clamp(0px, calc((100vw - 1200px) * 0.8), 80px);
+    }
+    .primary-nav ul {
+      gap: 24px;
+    }
+    .primary-nav a {
+      font-size: 0.90625rem;
+    }
+    .phone {
+      display: inline-flex;
+    }
+    .lang {
+      display: flex;
+    }
+    .lang-pick {
+      display: none;
+    }
+    .menu-toggle,
+    .menu-sheet {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1360px) {
+    .primary-nav ul {
+      gap: 24px;
+    }
+    .primary-nav a {
+      font-size: 0.9375rem;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+
+  if (header) {
+    /* ----- Shrink + hairline after 80px of scroll ----- */
+    let ticking = false;
+    const applyScroll = () => {
+      header.toggleAttribute('data-scrolled', window.scrollY > 80);
+      ticking = false;
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(applyScroll);
+        }
+      },
+      { passive: true },
+    );
+    applyScroll();
+
+    /* ----- CTA appears once the hero starter has left the viewport ----- */
+    const cta = header.querySelector<HTMLElement>('[data-header-cta]');
+    const starter = document.querySelector<HTMLElement>('[data-hero-starter]');
+    if (cta && header.dataset.ctaMode === 'after-hero' && starter) {
+      // Shown once the hero starter has scrolled away, hidden again while the closing starter is on screen:
+      // never two "Request a price" buttons at once.
+      let heroGone = false;
+      let closingInView = false;
+      const update = () => cta.toggleAttribute('data-visible', heroGone && !closingInView);
+      new IntersectionObserver(
+        ([entry]) => {
+          heroGone = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+          update();
+        },
+        { rootMargin: `-${header.offsetHeight}px 0px 0px 0px` },
+      ).observe(starter);
+      const closing = document.querySelector<HTMLElement>('[data-closing-starter]');
+      if (closing) {
+        new IntersectionObserver(
+          ([entry]) => {
+            closingInView = entry.isIntersecting;
+            update();
+          },
+          { rootMargin: `-${header.offsetHeight}px 0px 0px 0px` },
+        ).observe(closing);
+      }
+    } else if (cta) {
+      cta.setAttribute('data-visible', '');
+    }
+
+    /* ----- Language dropdown (below 1200px) ----- */
+    const langPick = header.querySelector<HTMLElement>('[data-lang-pick]');
+    const langToggle = langPick?.querySelector<HTMLButtonElement>('[data-lang-toggle]');
+    const langList = langPick?.querySelector<HTMLElement>('.lang-pick-list');
+    const setLangOpen = (open: boolean, restoreFocus = false) => {
+      if (!langToggle || !langList) return;
+      langToggle.setAttribute('aria-expanded', String(open));
+      langList.hidden = !open;
+      if (!open && restoreFocus) langToggle.focus();
+    };
+    langToggle?.addEventListener('click', () => setLangOpen(langToggle.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('click', (e) => {
+      if (langPick && !langPick.contains(e.target as Node)) setLangOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && langToggle?.getAttribute('aria-expanded') === 'true') setLangOpen(false, true);
+    });
+    langPick?.addEventListener('focusout', (e) => {
+      if (!langPick.contains((e as FocusEvent).relatedTarget as Node | null)) setLangOpen(false);
+    });
+
+    /* ----- Mobile menu ----- */
+    const toggle = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const sheet = header.querySelector<HTMLElement>('[data-menu]');
+    const label = toggle?.querySelector<HTMLElement>('[data-menu-label]');
+    // Everything outside the header is switched off while the sheet is open, so Tab cannot wander into the page behind it.
+    const behind = [document.querySelector<HTMLElement>('main'), document.querySelector<HTMLElement>('footer')];
+
+    if (toggle && sheet && label) {
+      const setOpen = (open: boolean, restoreFocus = false) => {
+        toggle.setAttribute('aria-expanded', String(open));
+        label.textContent = open ? toggle.dataset.labelOpen ?? '' : toggle.dataset.labelClosed ?? '';
+        sheet.hidden = !open;
+        document.documentElement.classList.toggle('is-locked', open);
+        behind.forEach((el) => el?.toggleAttribute('inert', open));
+        if (open) sheet.querySelector<HTMLElement>('a')?.focus();
+        else if (restoreFocus) toggle.focus();
+      };
+
+      toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+      sheet.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('a')) setOpen(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false, true);
+      });
+      window.matchMedia('(min-width: 1200px)').addEventListener('change', (e) => {
+        if (e.matches) setOpen(false);
+      });
+    }
+  }
+</script>

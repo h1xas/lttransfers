@@ -1,0 +1,255 @@
+---
+/*
+  The hero is a horizon, not a card:
+    1. stone masthead (headline left, supporting copy right, text never on the photo)
+    2. full-bleed photograph
+    3. booking strip overlapping the photograph's bottom edge
+    4. promise line, then the route board directly below (see HomePage)
+*/
+import { Picture } from 'astro:assets';
+import ContactLink from './ContactLink.astro';
+import RouteStarter from './RouteStarter.astro';
+import heroImage from '../assets/images/hero-airport-transfer.png';
+import type { Lang } from '../data/ui';
+import { getUi } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+// "Available 24/7 by advance booking." with 24/7 set in tabular medium
+const [availBefore, availAfter] = t.starter.promiseAvailability.split('24/7');
+const hasFigure = availAfter !== undefined;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="masthead">
+    <div class="page-grid">
+      <h1 class="headline" id="hero-title">{t.hero.headline}</h1>
+      <div class="aside">
+        <p class="subline">
+          <span class="subline-long">{t.hero.subline}</span>
+          <span class="subline-short">{t.hero.sublineShort}</span>
+        </p>
+        <p class="talk">
+          <span class="talk-prompt">{t.contact.talkPrompt}</span>
+          <ContactLink kind="phone" label={t.contact.phone} />
+          <span class="talk-sep" aria-hidden="true">·</span>
+          <ContactLink kind="whatsapp" />
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="media">
+    <!-- Final H1 photograph. Crop is controlled by --hero-position (desktop / mobile) below. -->
+    <Picture
+      src={heroImage}
+      alt={t.hero.imageAlt}
+      formats={['avif', 'webp']}
+      fallbackFormat="jpeg"
+      quality={72}
+      widths={[640, 960, 1280, 1600, 1916]}
+      sizes="100vw"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </div>
+
+  <div class="strip page-grid">
+    <div class="strip-inner">
+      <RouteStarter id="hero" lang={lang} hero />
+      <p class="promise">
+        {t.starter.promiseAgreed}{' · '}{
+          hasFigure ? (
+            <>
+              {availBefore}
+              <span class="figure">24/7</span>
+              {availAfter}
+            </>
+          ) : (
+            t.starter.promiseAvailability
+          )
+        }
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    /* Crop of the photograph. Tune per image: x y */
+    --hero-position: 44% 58%;
+    --strip-overlap: 24px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    padding-block: var(--space-4) var(--space-3);
+  }
+  .headline {
+    grid-column: 1 / -1;
+    font-size: var(--fs-display-xl);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    font-weight: var(--weight-medium);
+    text-wrap: balance;
+  }
+  .aside {
+    grid-column: 1 / -1;
+    margin-top: var(--space-2);
+  }
+  .subline {
+    max-width: 30rem;
+    color: var(--graphite-2);
+    font-size: var(--fs-body);
+    line-height: 1.45;
+  }
+  .subline-long {
+    display: none;
+  }
+  .talk {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 8px;
+    margin-top: var(--space-2);
+    font-size: var(--fs-small);
+    font-weight: var(--weight-medium);
+  }
+  .talk-prompt {
+    margin-right: 4px;
+    color: var(--graphite-2);
+    font-weight: var(--weight-regular);
+  }
+  .talk-sep {
+    color: var(--graphite-2);
+  }
+  .talk :global(.is-placeholder) {
+    color: var(--graphite);
+  }
+
+  /* ---------- Photograph ---------- */
+  .media {
+    position: relative;
+    overflow: hidden;
+    width: 100%; /* explicit, so max-height cannot narrow the box through the aspect ratio */
+    aspect-ratio: 16 / 9;
+    background: var(--stone-2);
+  }
+  .media :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-position);
+  }
+
+  /* ---------- Strip + promise ---------- */
+  .strip {
+    position: relative;
+    z-index: 2;
+    margin-top: calc(var(--strip-overlap) * -1);
+  }
+  .strip-inner {
+    grid-column: 1 / -1;
+  }
+  .promise {
+    margin-top: 14px;
+    color: var(--graphite-2);
+    font-size: var(--fs-small);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+  .figure {
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Tablet ---------- */
+  @media (min-width: 768px) {
+    .hero {
+      --strip-overlap: 72px; /* half of the two-row strip */
+      --hero-position: 56% 58%;
+    }
+    .masthead {
+      padding-block: var(--space-4) var(--space-4);
+    }
+    .aside {
+      margin-top: var(--space-2);
+      max-width: 32rem;
+    }
+    .subline {
+      font-size: var(--fs-body-l);
+      max-width: none;
+    }
+    .subline-long {
+      display: inline;
+    }
+    .subline-short {
+      display: none;
+    }
+    .talk {
+      font-size: var(--fs-body);
+    }
+    .media {
+      /* The photograph's own ratio (1916×821): shown whole, never cropped. */
+      aspect-ratio: 1916 / 821;
+    }
+    .promise {
+      font-size: 0.8125rem;
+    }
+  }
+
+  /* ---------- Desktop: masthead splits headline / supporting copy ---------- */
+  @media (min-width: 1100px) {
+    .hero {
+      --strip-overlap: 48px; /* half of the 96px strip */
+      --hero-position: 62% 40%;
+    }
+    /*
+      The photograph gives way to the screen, not the other way round: its height is what is left of the viewport
+      after the header, the masthead (80px of padding + two headline lines), the strip's lower half (48px) and the
+      promise line (64px), so the whole starter is in the first screen. It never exceeds the picture's own ratio
+      and never drops below 360px (≈464px at 1440 × 900, 360px on a short window).
+    */
+    .media {
+      aspect-ratio: auto;
+      height: clamp(
+        360px,
+        calc(100svh - var(--header-h) - 80px - 2.08 * var(--fs-display-xl) - 112px),
+        calc(100vw * 821 / 1916)
+      );
+    }
+    .masthead {
+      padding-block: 40px 40px; /* ≈ 260px band at the 1440 reference */
+    }
+    .headline {
+      grid-column: 1 / 9;
+    }
+    .aside {
+      grid-column: 9 / 13;
+      align-self: end;
+      margin-top: 0;
+      max-width: none;
+      /* last line sits on the headline's last baseline, not its box edge */
+      margin-bottom: calc(var(--fs-display-xl) * 0.2);
+    }
+    .subline {
+      max-width: 26em;
+      color: var(--graphite-2);
+      font-size: clamp(1.125rem, 1.5vw, 1.75rem);
+      line-height: 1.36;
+      text-wrap: pretty;
+    }
+    .talk {
+      margin-top: var(--space-3);
+      font-size: clamp(0.9375rem, 1vw, 1.125rem);
+    }
+  }
+</style>

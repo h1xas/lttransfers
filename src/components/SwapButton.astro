@@ -1,0 +1,79 @@
+---
+/*
+  The From ⇄ To swap control. Used in the LocationField slot of the homepage starters and of /request.
+  Stacked fields (below 768px) draw it as a bordered ⇅ straddling the divider; in a row it is a bare ⇄.
+  The parent sets `--swap-right` per layout; nothing else differs between the two forms.
+*/
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<button class="swap" type="button" data-swap aria-label={label} hidden>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false">
+    <path d="M3 8h17M16 4l4 4-4 4M21 17H4M8 13l-4 4 4 4"></path>
+  </svg>
+</button>
+
+<style>
+  .swap {
+    --divider: color-mix(in srgb, var(--graphite) 28%, transparent);
+    position: absolute;
+    z-index: 2;
+    right: var(--swap-right, 8px);
+    top: 100%;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    transform: translateY(-50%);
+    background: var(--paper);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-ctl);
+    color: var(--pine);
+    transition:
+      color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease);
+  }
+  .swap::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+  .swap svg {
+    transform: rotate(90deg); /* ⇅ when stacked */
+  }
+  .swap:hover {
+    background: var(--stone-2);
+  }
+  .swap:active {
+    background: var(--stone);
+  }
+  .swap[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .swap {
+      top: 50%;
+      background: transparent;
+      border-color: transparent;
+    }
+    .swap svg {
+      transform: none; /* ⇄ when in a row */
+    }
+  }
+
+  /* Narrow desktop: the same columns, slightly tighter fields */
+  @media (min-width: 1100px) and (max-width: 1279px) {
+    .swap {
+      width: 36px;
+      height: 36px;
+    }
+    .swap svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+</style>

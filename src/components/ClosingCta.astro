@@ -1,0 +1,231 @@
+---
+/*
+  The closing band ("the arrival"): the hero's counterpart, typography and UI on graphite, no photograph.
+
+    2px bone rule
+    headline c1–8 | supporting line c9–12 (bottom-aligned, as in the hero masthead)
+    the SAME booking starter as the hero (RouteStarter), prefilled from the hero via sessionStorage
+    promise line, then Call · WhatsApp as restrained text links
+
+  The footer continues on the same graphite directly beneath (SiteFooter, rendered by BaseLayout), so the
+  two read as one ending. This is the second and last dark section on the homepage.
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import ContactLink from './ContactLink.astro';
+import RouteStarter from './RouteStarter.astro';
+import { hasWhatsApp } from '../data/site';
+import type { Lang } from '../data/ui';
+import { getUi } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+// "Available 24/7 by advance booking." with 24/7 set in tabular medium, as in the hero
+const [availBefore, availAfter] = t.starter.promiseAvailability.split('24/7');
+const hasFigure = availAfter !== undefined;
+---
+
+<section class="closing" aria-labelledby="closing-title" data-closing>
+  <div class="page-grid">
+    <div class="rule" aria-hidden="true"></div>
+
+    <h2 class="headline" id="closing-title">{t.closing.headline}</h2>
+    <p class="subline">{t.closing.subline}</p>
+
+    <div class="strip" data-closing-starter>
+      <RouteStarter id="closing" lang={lang} onDark />
+    </div>
+
+    <p class="promise">
+      {t.starter.promiseAgreed}{' · '}{
+        hasFigure ? (
+          <>
+            {availBefore}
+            <span class="figure">24/7</span>
+            {availAfter}
+          </>
+        ) : (
+          t.starter.promiseAvailability
+        )
+      }
+    </p>
+
+    <ul role="list" class="talk">
+      <li>
+        <ContactLink kind="phone">
+          <Fragment slot="before"><span class="talk-prompt">{t.closing.callPrompt}</span>{' '}</Fragment>
+        </ContactLink>
+      </li>
+      <li>
+        <ContactLink kind="whatsapp" label={t.closing.whatsapp} />
+        {hasWhatsApp && <ArrowIcon class="talk-arrow" width={18} />}
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .closing {
+    background: var(--graphite);
+    color: var(--bone);
+    padding-top: var(--space-3);
+    /* the footer's own top padding supplies the rest of the graphite below */
+    padding-bottom: var(--space-6);
+  }
+  .closing :focus-visible {
+    outline-color: var(--pine-light);
+  }
+
+  /* ---------- Rule: marks the final chapter ---------- */
+  .rule {
+    grid-column: 1 / -1;
+    height: 2px;
+    background: var(--bone);
+  }
+
+  /* ---------- Masthead (mirrors the hero) ---------- */
+  .headline {
+    grid-column: 1 / -1;
+    margin-top: var(--space-5);
+    font-size: var(--fs-display-xl);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    font-weight: var(--weight-medium);
+    text-wrap: balance;
+  }
+  .subline {
+    grid-column: 1 / -1;
+    max-width: 30rem;
+    margin-top: var(--space-2);
+    color: var(--ash);
+    font-size: var(--fs-body);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* ---------- Strip ---------- */
+  .strip {
+    grid-column: 1 / -1;
+    margin-top: var(--space-4);
+  }
+
+  .promise {
+    grid-column: 1 / -1;
+    margin-top: 14px;
+    color: var(--ash);
+    font-size: var(--fs-small);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+  .figure {
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Call · WhatsApp: text links, 48px rows on phones ---------- */
+  .talk {
+    grid-column: 1 / -1;
+    margin-top: var(--space-2);
+    font-size: var(--fs-body);
+    font-weight: var(--weight-medium);
+  }
+  .talk li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+  }
+  .talk li + li {
+    border-top: 1px solid var(--hairline-dark);
+  }
+  .talk-prompt {
+    color: var(--ash);
+    font-weight: var(--weight-regular);
+  }
+  .talk-arrow {
+    flex: none;
+  }
+  .talk :global(a.contact-link) {
+    text-underline-offset: 4px;
+  }
+  .talk :global(a.contact-link:hover) {
+    color: var(--paper);
+  }
+
+  /* ---------- Tablet ---------- */
+  @media (min-width: 768px) {
+    .closing {
+      padding-top: var(--space-4);
+      padding-bottom: var(--space-7);
+    }
+    .headline {
+      margin-top: var(--space-6);
+    }
+    .subline {
+      margin-top: var(--space-3);
+      max-width: 32rem;
+      font-size: var(--fs-body-l);
+    }
+    .strip {
+      margin-top: var(--space-5);
+    }
+    .promise {
+      font-size: 0.8125rem;
+    }
+    .talk {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .talk li {
+      min-height: 0;
+      padding-block: 4px;
+    }
+    .talk li + li {
+      border-top: 0;
+    }
+    .talk li + li::before {
+      content: '·';
+      margin-left: 10px;
+      color: var(--ash);
+    }
+  }
+
+  /* ---------- Desktop: headline c1–8 | supporting line c9–12 ---------- */
+  @media (min-width: 1100px) {
+    .closing {
+      padding-top: var(--space-5);
+      padding-bottom: 96px;
+    }
+    .headline {
+      grid-column: 1 / 9;
+      grid-row: 2;
+      margin-top: 88px;
+    }
+    .subline {
+      grid-column: 9 / 13;
+      grid-row: 2;
+      align-self: end;
+      margin-top: 0;
+      max-width: 26em;
+      /* last line sits on the headline's last baseline, not its box edge */
+      margin-bottom: calc(var(--fs-display-xl) * 0.2);
+      font-size: clamp(1.125rem, 1.5vw, 1.75rem);
+      line-height: 1.36;
+    }
+    .strip {
+      margin-top: 64px;
+    }
+    .promise {
+      margin-top: 18px;
+    }
+    .talk {
+      margin-top: var(--space-3);
+      font-size: clamp(0.9375rem, 1vw, 1.125rem);
+    }
+  }
+</style>

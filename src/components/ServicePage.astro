@@ -1,0 +1,750 @@
+---
+/*
+  Service information page: one layout for /airport-transfers/, /business-vip-transfers/, /long-distance/ and
+  /cross-border/. Content comes from data/servicePages.ts; shared strings from data/ui.ts (`servicePage`).
+
+  These are information sheets, not landing pages: no photograph, no card, no icon, no map. Typography,
+  hairlines and the stone / paper / graphite system carry them.
+
+    masthead      2px rule · H1 · lead · one supporting sentence · "Request a price" text link
+    sections      1px hairline, heading in the left rail (c1–4), content c5–12; stacked on phone and tablet
+    questions     every answer printed openly (short list, so no accordion)
+    other         a ruled row of text links to the sibling pages
+    closing       compact "Planning a journey?" block with the one solid button
+
+  The page has as many sections as it has things to say. Nothing here is a template slot to be filled.
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import ContactLink from './ContactLink.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { boardName, getLocation, locationValue } from '../data/locations';
+import { routes } from '../data/routes';
+import { getServicePage, type JourneyRef, type ServiceSlug } from '../data/servicePages';
+import { hasPhone, hasWhatsApp } from '../data/site';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+import { formatPrice, requestHref } from '../utils/routes';
+
+interface Props {
+  lang: Lang;
+  slug: ServiceSlug;
+}
+
+const { lang, slug } = Astro.props;
+const t = getUi(lang);
+const s = t.servicePage;
+const page = getServicePage(lang, slug);
+const requestUrl = localePath(lang, '/request/');
+
+type Place = { name: string; code?: string };
+interface Journey {
+  from: Place;
+  to: Place;
+  href: string;
+  /** Only for a route whose price is final. Development placeholders never reach these pages. */
+  price?: string;
+}
+
+function place(id: string): Place {
+  const loc = getLocation(id);
+  return { name: boardName(loc, lang), code: loc.code };
+}
+
+function resolveJourney(ref: JourneyRef): Journey {
+  if ('routeId' in ref) {
+    const route = routes.find((r) => r.id === ref.routeId);
+    if (!route) throw new Error(`Unknown route id: ${ref.routeId}`);
+    return {
+      from: place(route.from),
+      to: place(route.to),
+      href: requestHref(lang, locationValue(getLocation(route.from), lang), locationValue(getLocation(route.to), lang)),
+      price: route.status === 'final' && route.price.amount !== null ? formatPrice(route.price, lang) : undefined,
+    };
+  }
+  return {
+    from: place(ref.from),
+    to: place(ref.to),
+    href: requestHref(lang, locationValue(getLocation(ref.from), lang), locationValue(getLocation(ref.to), lang)),
+  };
+}
+
+const others = page.related.map((slug) => {
+  const item = t.services.items.find((i) => i.slug === slug)!;
+  return { name: item.name, href: localePath(lang, `/${slug}/`) };
+});
+
+const hasContact = hasPhone || hasWhatsApp;
+---
+
+<BaseLayout lang={lang} title={page.metaTitle} description={page.metaDescription}>
+  <article class="service">
+    <header class="mast">
+      <div class="page-grid">
+        <div class="eyebrow" aria-hidden="true"></div>
+        <h1 class="h1">{page.h1.replace(' & ', ' & ')}</h1>
+        <div class="intro">
+          <p class="lead">{page.lead}</p>
+          {page.support && <p class="support">{page.support}</p>}
+          <a class="request-link" href={requestUrl}>
+            <span>{s.requestLink}</span>
+            <ArrowIcon class="request-arrow" width={22} />
+          </a>
+        </div>
+      </div>
+    </header>
+
+    {
+      page.sections.map((section) => (
+        <section class="sec" aria-labelledby={`h-${section.id}`}>
+          <div class="page-grid">
+            <div class="rule" aria-hidden="true" />
+            <h2 class="rail" id={`h-${section.id}`}>{section.heading}</h2>
+            <div class="body">
+              {section.blocks.map((block) => {
+                switch (block.type) {
+                  case 'prose':
+                    return (
+                      <div class="prose">
+                        {block.paragraphs.map((p) => (
+                          <p>{p}</p>
+                        ))}
+                      </div>
+                    );
+                  case 'statement':
+                    return <p class="statement">{block.text}</p>;
+                  case 'list':
+                    return (
+                      <>
+                        <ul role="list" class="ruled cols">
+                          {block.items.map((item) => (
+                            <li class="item">
+                              <span>{item.text}</span>
+                              {item.code && <span class="code">{item.code}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                        {block.note && (
+                          <p class="note">
+                            {block.note.before}
+                            <a href={requestUrl}>{block.note.link}</a>
+                            {block.note.after}
+                          </p>
+                        )}
+                      </>
+                    );
+                  case 'rows':
+                    return (
+                      <dl class="ruled terms">
+                        {block.rows.map((row) => (
+                          <div class="term-row">
+                            <dt>{row.term}</dt>
+                            <dd>{row.text}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    );
+                  case 'journeys':
+                    return (
+                      <>
+                        <ul role="list" class="ruled journeys">
+                          {block.items.map(resolveJourney).map((j) => (
+                            <li>
+                              <a class="journey" href={j.href}>
+                                <span class="path">
+                                  <span class="nowrap">
+                                    {j.from.name}
+                                    {j.from.code && <span class="code">{j.from.code}</span>}
+                                  </span>
+                                  <ArrowIcon class="path-arrow" width={22} />
+                                  <span class="sr-only"> {t.routes.to} </span>
+                                  <span class="nowrap">
+                                    {j.to.name}
+                                    {j.to.code && <span class="code">{j.to.code}</span>}
+                                  </span>
+                                </span>
+                                {j.price && <span class="price">{j.price}</span>}
+                                <ArrowIcon class="go" width={24} />
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                        <p class="note">
+                          {block.note ?? s.journeyHint}
+                          {block.more && (
+                            <>
+                              {' '}
+                              <a href={localePath(lang, block.more.path)}>{block.more.label}</a>
+                            </>
+                          )}
+                        </p>
+                      </>
+                    );
+                }
+              })}
+            </div>
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="sec" aria-labelledby="h-faq">
+      <div class="page-grid">
+        <div class="rule" aria-hidden="true" />
+        <h2 class="rail" id="h-faq">{s.faqTitle}</h2>
+        <div class="body">
+          <ul role="list" class="ruled faq">
+            {
+              page.faq.map((item) => (
+                <li class="qa">
+                  <h3>{item.question}</h3>
+                  <p>{item.answer}</p>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <nav class="sec other" aria-labelledby="h-other">
+      <div class="page-grid">
+        <div class="rule" aria-hidden="true" />
+        <h2 class="rail" id="h-other">{s.otherTitle}</h2>
+        <ul role="list" class="body links">
+          {
+            others.map((o) => (
+              <li>
+                <a href={o.href}>
+                  <span>{o.name.replace(' & ', ' & ')}</span>
+                  <ArrowIcon class="link-arrow" width={22} />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </nav>
+
+    <section class="closing" aria-labelledby="h-closing">
+      <div class="page-grid">
+        <div class="rule strong" aria-hidden="true" />
+        <h2 class="closing-title" id="h-closing">{s.closing.headline}</h2>
+        <div class="closing-body">
+          <p class="closing-text">{s.closing.text}</p>
+          <a class="button" href={requestUrl}>
+            <span>{s.closing.cta}</span>
+            <ArrowIcon class="button-arrow" width={22} />
+          </a>
+          {
+            hasContact && (
+              <ul role="list" class="talk">
+                {hasPhone && (
+                  <li>
+                    <span class="talk-prompt">{s.closing.call}</span> <ContactLink kind="phone" />
+                  </li>
+                )}
+                {hasWhatsApp && (
+                  <li>
+                    <ContactLink kind="whatsapp" label={s.closing.whatsapp} />
+                  </li>
+                )}
+              </ul>
+            )
+          }
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .service {
+    --h1: clamp(2.25rem, 9.6vw, 2.5rem); /* 36–40 on phones */
+    --row-pad: 14px;
+    padding-bottom: 0;
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  /* ---------- Masthead ---------- */
+  .mast {
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-5);
+  }
+  /* A 2px graphite rule opens the masthead (the label that used to sit on it was removed). */
+  .eyebrow {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--graphite);
+    white-space: nowrap;
+  }
+  .eyebrow::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--graphite);
+  }
+  .h1 {
+    grid-column: 1 / -1;
+    margin-top: var(--space-4);
+    font-size: var(--h1);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    text-wrap: balance;
+  }
+  .intro {
+    grid-column: 1 / -1;
+    margin-top: var(--space-3);
+    max-width: 38rem;
+  }
+  .lead {
+    font-size: var(--fs-body-l);
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+  .support {
+    margin-top: 10px;
+    color: var(--graphite-2);
+    text-wrap: pretty;
+  }
+  .request-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    margin-top: var(--space-1);
+    font-weight: var(--weight-medium);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .request-link :global(.request-arrow) {
+    color: var(--pine);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .request-link:hover :global(.request-arrow) {
+    transform: translateX(4px);
+  }
+
+  /* ---------- Sections: hairline, rail heading, body ---------- */
+  .sec .rule {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--hairline);
+  }
+  .rail {
+    grid-column: 1 / -1;
+    padding-top: 22px;
+    font-size: var(--fs-title);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .body {
+    grid-column: 1 / -1;
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-4);
+    min-width: 0;
+  }
+
+  .prose {
+    max-width: 38rem;
+  }
+  .prose p {
+    text-wrap: pretty;
+  }
+  .prose p + p {
+    margin-top: 14px;
+  }
+  .prose + .prose,
+  .statement + .journeys {
+    margin-top: var(--space-2);
+  }
+  .statement {
+    margin-bottom: var(--space-3);
+    font-size: 1.75rem;
+    font-weight: var(--weight-medium);
+    line-height: 1.12;
+    letter-spacing: var(--track-display);
+    text-wrap: balance;
+  }
+  .note {
+    margin-top: var(--space-2);
+    color: var(--graphite-2);
+    font-size: var(--fs-small);
+    text-wrap: pretty;
+  }
+  .note a {
+    color: var(--graphite);
+    text-underline-offset: 3px;
+  }
+
+  /* ruled lists: hairline between rows, none above the first (the section rule is that line) */
+  .ruled {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ruled > li,
+  .ruled > div {
+    border-top: 1px solid var(--hairline);
+  }
+  .ruled > :first-child {
+    border-top: 0;
+  }
+
+  .item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: var(--row-pad);
+    font-size: var(--fs-body-l);
+    line-height: 1.3;
+  }
+  .item:first-child {
+    padding-top: 0;
+  }
+
+  /* Good to know */
+  .term-row {
+    padding-block: var(--row-pad);
+  }
+  .term-row:first-child {
+    padding-top: 0;
+  }
+  dt {
+    font-weight: var(--weight-medium);
+  }
+  dd {
+    margin: 2px 0 0;
+    color: var(--graphite-2);
+    text-wrap: pretty;
+  }
+
+  /* Journeys: one link per row, route filled in on /request/ */
+  .journey {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 56px;
+    /* full-bleed below 1100px so the pressed tint spans the screen; the text stays on the grid margin */
+    margin-inline: calc(var(--grid-margin) * -1);
+    padding: 12px var(--grid-margin);
+    color: var(--graphite);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .journey:active {
+    background: var(--stone-2);
+  }
+  .journey:focus-visible {
+    outline-offset: -2px;
+  }
+  .path {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--fs-body-l);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
+  }
+  .path :global(.path-arrow) {
+    display: inline-block;
+    width: 22px;
+    height: 11px;
+    margin-inline: 10px;
+    vertical-align: middle;
+    color: var(--pine);
+  }
+  .path .code {
+    margin-left: 0.35em;
+    font-weight: var(--weight-regular);
+  }
+  .price {
+    flex: none;
+    color: var(--graphite-2);
+    font-size: var(--fs-small);
+  }
+  .journey :global(.go) {
+    flex: none;
+    width: 24px;
+    height: 12px;
+    color: color-mix(in srgb, var(--pine) 68%, transparent);
+    transition:
+      color var(--dur-fast) var(--ease),
+      transform var(--dur-fast) var(--ease);
+  }
+  .journey:focus-visible :global(.go) {
+    color: var(--pine);
+    transform: translateX(4px);
+  }
+  @media (hover: hover) {
+    .journey:hover :global(.go) {
+      color: var(--pine);
+      transform: translateX(4px);
+    }
+  }
+  .journeys > li:first-child .journey {
+    margin-top: -12px; /* the first row's text lines up with the rail heading */
+  }
+
+  /* Questions: every answer open */
+  .qa {
+    padding-block: 18px;
+  }
+  .qa:first-child {
+    padding-top: 0;
+  }
+  .qa h3 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+    text-wrap: pretty;
+  }
+  .qa p {
+    max-width: 38rem;
+    margin-top: 6px;
+    color: var(--graphite-2);
+    text-wrap: pretty;
+  }
+
+  /* Other transfers */
+  .other .body {
+    padding-bottom: var(--space-4);
+  }
+  .links {
+    list-style: none;
+    margin: 0;
+    padding-inline: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+  }
+  .links a span {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .links :global(.link-arrow) {
+    color: var(--pine);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .links a:hover :global(.link-arrow) {
+    transform: translateX(4px);
+  }
+
+  /* ---------- Closing: compact, light, one solid button ---------- */
+  .closing {
+    padding-bottom: var(--space-5);
+  }
+  .closing .rule {
+    grid-column: 1 / -1;
+    height: 2px;
+    background: var(--graphite);
+  }
+  .closing-title {
+    grid-column: 1 / -1;
+    margin-top: var(--space-3);
+    font-size: var(--fs-display-l);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    text-wrap: balance;
+  }
+  .closing-body {
+    grid-column: 1 / -1;
+    margin-top: var(--space-2);
+  }
+  .closing-text {
+    max-width: 30rem;
+    font-size: var(--fs-body-l);
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+  .button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 56px;
+    margin-top: var(--space-3);
+    padding: 0 var(--object-inset);
+    background: var(--graphite);
+    color: var(--bone);
+    border-radius: var(--radius-ctl);
+    font-size: 0.8125rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .button:hover {
+    background: var(--graphite-hover);
+  }
+  .button:active {
+    background: var(--graphite-press);
+  }
+  .button :global(.button-arrow) {
+    flex: none;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .button:hover :global(.button-arrow) {
+    transform: translateX(4px);
+  }
+  .talk {
+    list-style: none;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    font-weight: var(--weight-medium);
+  }
+  .talk li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--tap);
+  }
+  .talk-prompt {
+    color: var(--graphite-2);
+    font-weight: var(--weight-regular);
+  }
+
+  /* ---------- Tablet ---------- */
+  @media (min-width: 768px) {
+    .service {
+      --h1: clamp(2.75rem, 4.4vw, 4rem);
+      --row-pad: 16px;
+    }
+    .mast {
+      padding-top: var(--space-5);
+      padding-bottom: var(--space-6);
+    }
+    .h1 {
+      margin-top: var(--space-5);
+    }
+    .intro {
+      margin-top: var(--space-4);
+    }
+    .rail {
+      padding-top: 28px;
+      font-size: var(--fs-title);
+    }
+    .body {
+      padding-top: var(--space-3);
+      padding-bottom: var(--space-5);
+    }
+    .statement {
+      font-size: 2.25rem;
+    }
+    .ruled.cols {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--grid-gutter);
+    }
+    .ruled.cols > li:nth-child(2) {
+      border-top: 0;
+      padding-top: 0;
+    }
+    .qa h3 {
+      font-size: 1.25rem;
+    }
+    .closing {
+      padding-bottom: var(--space-6);
+    }
+    .closing-title {
+      margin-top: var(--space-4);
+    }
+    .closing-body {
+      margin-top: var(--space-3);
+    }
+    .button {
+      display: inline-flex;
+      min-width: 320px;
+    }
+  }
+
+  /* ---------- Desktop: rail c1–4 · content c5–12 ---------- */
+  @media (min-width: 1100px) {
+    .mast {
+      padding-bottom: 72px;
+    }
+    .intro {
+      grid-column: 5 / 12;
+    }
+    .sec .rule {
+      grid-row: 1;
+    }
+    .rail {
+      grid-column: 1 / 5;
+      grid-row: 2;
+      padding-top: 32px;
+    }
+    .body {
+      grid-column: 5 / -1;
+      grid-row: 2;
+      padding-top: 32px;
+      padding-bottom: 48px;
+    }
+    .journey {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+    .journeys > li:first-child .journey {
+      margin-top: -12px;
+    }
+    .term-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      column-gap: var(--grid-gutter);
+    }
+    dd {
+      margin-top: 0;
+    }
+    .qa {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: var(--grid-gutter);
+      padding-block: 22px;
+    }
+    .qa p {
+      margin-top: 0;
+    }
+    .other .body {
+      padding-top: 24px;
+      padding-bottom: 40px;
+    }
+    .other .rail {
+      padding-top: 38px;
+    }
+    .closing {
+      padding-bottom: 80px;
+    }
+    .closing-title {
+      grid-column: 1 / 5;
+      grid-row: 2;
+      margin-top: var(--space-4);
+      font-size: clamp(2rem, 2.6vw, 2.5rem);
+    }
+    .closing-body {
+      grid-column: 5 / -1;
+      grid-row: 2;
+      margin-top: var(--space-4);
+    }
+    .button {
+      min-width: 360px;
+      width: min(100%, 400px);
+    }
+  }
+</style>

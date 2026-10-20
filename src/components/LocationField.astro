@@ -1,0 +1,37 @@
+---
+/*
+  A labelled location input that becomes an ARIA combobox once RouteStarter's
+  script runs. Without JS it is a plain text input: any address still works.
+*/
+import '../styles/location-suggestions.css';
+
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  hint: string;
+}
+
+const { id, name, label, hint } = Astro.props;
+---
+
+<div class="field" data-field>
+  <label for={id} class="label">{label}</label>
+  <input
+    id={id}
+    name={name}
+    type="text"
+    class="input"
+    placeholder={hint}
+    autocomplete="off"
+    autocapitalize="words"
+    spellcheck="false"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-expanded="false"
+    aria-controls={`${id}-list`}
+    data-combobox
+  />
+  <ul class="suggestions" id={`${id}-list`} role="listbox" aria-label={label} hidden></ul>
+  <slot />
+</div>

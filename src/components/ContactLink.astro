@@ -1,0 +1,59 @@
+---
+/*
+  Phone / WhatsApp. Until real details exist in data/site.ts this renders plain
+  placeholder text and no link, so nothing points at an invented number.
+*/
+import { site } from '../data/site';
+
+interface Props {
+  kind: 'phone' | 'whatsapp';
+  /** Visible text. Phone defaults to the number (or its placeholder). */
+  label?: string;
+  /** Optional compact text; the parent decides when to swap via .contact-full / .contact-short. */
+  shortLabel?: string;
+  class?: string;
+}
+
+const { kind, label, shortLabel, class: className } = Astro.props;
+
+const href =
+  kind === 'phone'
+    ? site.contact.phone.tel
+      ? `tel:${site.contact.phone.tel}`
+      : null
+    : site.contact.whatsapp.url;
+
+const text = label ?? (kind === 'phone' ? site.contact.phone.display : 'WhatsApp');
+const Tag = href ? 'a' : 'span';
+---
+
+<Tag
+  class:list={['contact-link', { 'is-placeholder': !href }, className]}
+  href={href ?? undefined}
+  target={kind === 'whatsapp' && href ? '_blank' : undefined}
+  rel={kind === 'whatsapp' && href ? 'noopener' : undefined}
+  data-placeholder={href ? undefined : ''}
+>
+  <slot name="before" />{
+    shortLabel ? (
+      <>
+        <span class="contact-full">{text}</span>
+        <span class="contact-short">{shortLabel}</span>
+      </>
+    ) : (
+      text
+    )
+  }<slot name="after" />
+</Tag>
+
+<style>
+  .contact-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  a.contact-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+/*
+  Homepage composition, shared by `/` (en) and `/lt/` (lt) so both are static routes
+  built from the same template and language data.
+
+  The page ends with the closing band; the footer comes from BaseLayout, on the same graphite.
+*/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from './Hero.astro';
+import RouteBoard from './RouteBoard.astro';
+import BookingProcess from './BookingProcess.astro';
+import IncludedInTransfer from './IncludedInTransfer.astro';
+import FleetSheet from './FleetSheet.astro';
+import CertaintySheet from './CertaintySheet.astro';
+import WhereWeGo from './WhereWeGo.astro';
+import Faq from './Faq.astro';
+import ClosingCta from './ClosingCta.astro';
+import MobileActionBar from './MobileActionBar.astro';
+import type { Lang } from '../data/ui';
+import { getUi } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+---
+
+<BaseLayout lang={lang} title={t.meta.homeTitle} description={t.meta.homeDescription} headerCta="after-hero">
+  <Hero lang={lang} />
+  <RouteBoard lang={lang} />
+  <BookingProcess lang={lang} />
+  <IncludedInTransfer lang={lang} />
+  <FleetSheet lang={lang} />
+  <CertaintySheet lang={lang} />
+  <WhereWeGo lang={lang} />
+  <Faq lang={lang} />
+  <ClosingCta lang={lang} />
+  <MobileActionBar lang={lang} />
+</BaseLayout>

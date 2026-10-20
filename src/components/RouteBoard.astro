@@ -1,0 +1,168 @@
+---
+/*
+  Popular routes: "the timetable". Data comes from src/data/routes.ts.
+  Printed-timetable language: stone, graphite type, hairlines, tabular figures.
+  No cards, no zebra stripes, no lit-board effects.
+*/
+import '../styles/board.css';
+import RouteRow from './RouteRow.astro';
+import { assertRoutesReleasable, hasDevRoutes, routes } from '../data/routes';
+import type { Lang } from '../data/ui';
+import { getUi } from '../utils/i18n';
+import { requestHref, resolveRoute } from '../utils/routes';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const r = t.routes;
+
+assertRoutesReleasable();
+const rows = routes.map((route) => resolveRoute(route, lang, t));
+---
+
+<section class="routes" aria-labelledby="popular-routes">
+  <div class="page-grid">
+    <div class="board">
+      <h2 class="title label" id="popular-routes">{r.title}</h2>
+
+      <div class="head board-row" aria-hidden="true">
+        <span class="label col-from">{r.columns.from}</span>
+        <span class="label col-to">{r.columns.to}</span>
+        <span class="label col-time">{r.columns.byRoad}</span>
+        <span class="label col-price">{r.columns.price}</span>
+      </div>
+
+      <ul role="list" class="rows">
+        {
+          rows.map((row) => (
+            <li>
+              <RouteRow
+                href={row.href}
+                t={r}
+                from={row.from}
+                to={row.to}
+                duration={row.duration}
+                price={row.price}
+                isDev={row.isDev}
+              />
+            </li>
+          ))
+        }
+        <li class="other">
+          <RouteRow href={requestHref(lang)} t={r} other />
+        </li>
+      </ul>
+
+      <div class="notes">
+        <p>{r.clarification}</p>
+        <p>{r.oneWay}</p>
+        {hasDevRoutes && <p class="dev-legend">{r.devLegend}</p>}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .routes {
+    padding-block: var(--space-4) var(--space-6);
+  }
+  .board {
+    grid-column: 1 / -1;
+  }
+
+  /* Title sits on a 2px graphite rule, like a timetable heading */
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
+    color: var(--graphite);
+    text-wrap: nowrap;
+  }
+  .title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--graphite);
+  }
+
+  .head {
+    display: none;
+  }
+
+  .rows > li {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .rows > li:first-child {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .notes {
+    max-width: 38rem;
+    margin-top: var(--space-3);
+    color: var(--graphite-2);
+    font-size: var(--fs-small);
+    line-height: 1.5;
+  }
+  .notes p + p {
+    margin-top: 6px;
+  }
+  .dev-legend {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+
+  @media (min-width: 768px) {
+    .routes {
+      padding-top: var(--space-5);
+      padding-bottom: 80px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .routes {
+      padding-top: 32px;
+    }
+    .head {
+      position: relative;
+      display: grid;
+      height: 48px;
+      color: var(--graphite-2);
+      border-bottom: 1px solid var(--hairline);
+    }
+    /* Vertical hairlines at the strip's divider positions: the three column edges after From */
+    .head .col-to,
+    .head .col-time,
+    .head .col-price {
+      position: relative;
+    }
+    .head .col-to::before,
+    .head .col-time::before,
+    .head .col-price::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--grid-gutter) / -2);
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--hairline);
+    }
+    .head .col-price {
+      /* stretch (not end) so the divider sits on the column edge; the label stays right-aligned */
+      justify-self: stretch;
+      text-align: right;
+    }
+    .rows > li:first-child {
+      border-top: 0;
+    }
+    .notes {
+      margin-top: var(--space-3);
+      padding-inline: var(--object-inset);
+    }
+  }
+</style>

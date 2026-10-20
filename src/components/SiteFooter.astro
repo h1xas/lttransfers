@@ -1,0 +1,402 @@
+---
+/*
+  Site footer. Continues the closing band's graphite (no third dark block): a 1px hairline at low opacity,
+  then a quiet, restrained set of columns. Small type only; bone primary, ash secondary.
+
+  Only confirmed information renders:
+    - the operator's name; the register rows (legal form, code, address, permit, insurance) only when
+      a real value exists in data/site.ts, otherwise they are simply absent
+    - phone / WhatsApp / email as links only when real (ContactLink / site.ts handle the placeholders)
+    - links to service routes, Cars and How it works (same future URL structure as the header),
+      and Privacy / Terms, which stay plain text until their pages are written (data/launch.ts)
+  No social icons, newsletter, wordmark graphic or policy pages that do not exist.
+
+  Desktop (≥1100px): brand + operator c1–4 | transfers c5–7 | company c8–9 | contact + language c10–12,
+  then the disclosure (c1–8) and legal links (c10–12) on a last row.
+  Mobile: a single column in the order brand, operator, contact, services, legal, language, disclosure.
+*/
+import ContactLink from './ContactLink.astro';
+import { isBuilt } from '../data/launch';
+import { site } from '../data/site';
+import { languages, langs, type Lang } from '../data/ui';
+import { getUi, localePath, stripLocale } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const f = t.footer;
+
+// Same labels and order as the header navigation, so the service names read the same everywhere.
+const serviceLinks = t.nav.items
+  .filter((item) => ['airport', 'business', 'long', 'cross'].includes(item.key))
+  .map((item) => ({ label: item.label, href: localePath(lang, item.path) }));
+const companyLinks = t.nav.items
+  .filter((item) => item.key === 'cars' || item.key === 'how')
+  .map((item) => ({ label: item.label, href: localePath(lang, item.path) }));
+// Privacy / Terms render as links only once their pages exist (data/launch.ts); until then they are plain text.
+const legalLinks = f.legal.map((item) => ({
+  label: item.label,
+  href: localePath(lang, item.path),
+  built: isBuilt(item.path),
+}));
+
+// Register rows print only once the business has confirmed a value.
+const reg = t.certainty.register;
+const registerRows = [
+  { label: reg.legalForm, value: site.register.legalForm },
+  { label: reg.companyCode, value: site.register.companyCode },
+  { label: reg.address, value: site.register.address },
+  { label: reg.permit, value: site.register.permit },
+  { label: reg.insurance, value: site.register.insurance },
+].filter((row): row is { label: string; value: string } => row.value !== null);
+
+const pathname = Astro.url.pathname;
+const switchTo = langs.map((l) => ({
+  short: languages[l].short,
+  label: languages[l].label,
+  htmlLang: languages[l].htmlLang,
+  href: localePath(l, stripLocale(pathname)),
+  current: l === lang,
+}));
+---
+
+<footer class="footer" aria-label={f.label}>
+  <div class="page-grid">
+    <div class="hairline" aria-hidden="true"></div>
+
+    <div class="brand">
+      <a class="wordmark" href={localePath(lang, '/')}>{t.siteName}</a>
+      <dl class="operator">
+        <div>
+          <dt>{f.operator}</dt>
+          <dd>{site.operator}</dd>
+        </div>
+        {
+          registerRows.map((row) => (
+            <div>
+              <dt>{row.label}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <div class="contact">
+      <h2 class="heading">{f.contactHeading}</h2>
+      <ul role="list" class="links">
+        <li><ContactLink kind="phone" /></li>
+        <li><ContactLink kind="whatsapp" label={t.contact.whatsapp} /></li>
+        {site.contact.email && <li><a class="contact-link" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>}
+      </ul>
+    </div>
+
+    <nav class="services" aria-labelledby="footer-services">
+      <h2 class="heading" id="footer-services">{f.servicesHeading}</h2>
+      <ul role="list" class="links">
+        {serviceLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <nav class="company" aria-labelledby="footer-company">
+      <h2 class="heading" id="footer-company">{f.moreHeading}</h2>
+      <ul role="list" class="links">
+        {companyLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <nav class="legal" aria-label={f.legalLabel}>
+      <ul role="list" class="links links-inline">
+        {legalLinks.map((link) => <li>{link.built ? <a href={link.href}>{link.label}</a> : <span class="pending">{link.label}</span>}</li>)}
+      </ul>
+    </nav>
+
+    <nav class="lang" aria-label={t.a11y.footerLanguageNav}>
+      <ul role="list" class="links links-inline">
+        {
+          switchTo.map((l) => (
+            <li>
+              <a href={l.href} hreflang={l.htmlLang} lang={l.htmlLang} aria-current={l.current ? 'true' : undefined} title={l.label}>
+                {l.short}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <p class="disclosure">{f.disclosure}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--graphite);
+    color: var(--bone);
+    padding-bottom: var(--space-6);
+    font-size: var(--fs-small);
+    line-height: 1.5;
+  }
+  .footer :focus-visible {
+    outline-color: var(--pine-light);
+  }
+  .footer .page-grid {
+    row-gap: var(--space-5);
+  }
+
+  .hairline {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--hairline-dark);
+  }
+
+  /* ---------- Brand + operator ---------- */
+  .wordmark {
+    display: inline-block;
+    font-size: 1.1875rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .operator {
+    margin-top: var(--space-2);
+  }
+  .operator > div + div {
+    margin-top: var(--space-1);
+  }
+  dt {
+    color: var(--ash);
+    font-size: var(--fs-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  dd {
+    margin: 4px 0 0;
+  }
+
+  /* ---------- Link groups ---------- */
+  .heading {
+    margin-bottom: var(--space-1);
+    color: var(--ash);
+    font-size: var(--fs-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .links li {
+    display: flex;
+    min-height: 44px; /* comfortable tap height without boxing the rows */
+    align-items: center;
+  }
+  .links a {
+    text-decoration: none;
+    text-underline-offset: 4px;
+  }
+  .links a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+  .links :global(a.contact-link) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .links a[aria-current] {
+    color: var(--paper);
+    font-weight: var(--weight-medium);
+  }
+  .links-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 20px;
+  }
+  /* A legal page that is not written yet: not a link, and visibly quieter than one. */
+  .pending {
+    color: var(--ash);
+  }
+  .lang .links-inline {
+    gap: 0;
+  }
+  .lang li + li::before {
+    content: '·';
+    margin-inline: 4px;
+    color: var(--ash);
+  }
+  .lang a {
+    padding-inline: 8px; /* keeps each language a 44px+ target */
+    color: var(--ash);
+  }
+  .lang a[aria-current] {
+    color: var(--bone);
+  }
+
+  .disclosure {
+    color: var(--ash);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    max-width: 38rem;
+    text-wrap: pretty;
+  }
+
+  /* ---------- Mobile: one column; groups separated by hairline + spacing ---------- */
+  .brand,
+  .contact,
+  .services,
+  .company,
+  .legal,
+  .lang,
+  .disclosure {
+    grid-column: 1 / -1;
+  }
+  .footer .page-grid {
+    row-gap: var(--space-2);
+  }
+  .contact,
+  .services,
+  .company,
+  .legal,
+  .lang {
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline-dark);
+  }
+  /* Legal and language share one row on phones: two short groups do not each need a ruled block. */
+  .legal {
+    grid-column: 1 / 3;
+    position: relative;
+  }
+  .lang {
+    grid-column: 3 / 5;
+  }
+  .legal::after {
+    /* carries the rule across the gutter so the shared row still reads as one ruled band */
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 100%;
+    width: var(--grid-gutter);
+    height: 1px;
+    background: var(--hairline-dark);
+  }
+  /* mobile order: brand, operator, contact, services, legal, language, disclosure */
+  .hairline { order: 0; }
+  .brand { order: 1; }
+  .contact { order: 2; }
+  .services { order: 3; }
+  .company { order: 4; }
+  .legal { order: 5; }
+  .lang { order: 6; }
+  .disclosure { order: 7; }
+  .lang .links-inline {
+    justify-content: flex-end;
+    margin-right: -8px; /* the link padding keeps a 44px target while the text aligns to the grid margin */
+  }
+
+  /* ---------- Tablet: two columns on the 8-column grid ---------- */
+  @media (min-width: 768px) {
+    .footer .page-grid {
+      row-gap: var(--space-5);
+    }
+    .hairline {
+      margin-bottom: var(--space-1);
+    }
+    .legal::after {
+      display: none;
+    }
+    .lang .links-inline {
+      justify-content: flex-start;
+      margin-right: 0;
+    }
+    .contact,
+    .services,
+    .company,
+    .legal,
+    .lang {
+      padding-top: 0;
+      border-top: 0;
+    }
+    .brand {
+      grid-column: 1 / 5;
+    }
+    .contact {
+      grid-column: 5 / 9;
+    }
+    .services {
+      grid-column: 1 / 5;
+    }
+    .company {
+      grid-column: 5 / 9;
+    }
+    .legal {
+      grid-column: 1 / 5;
+    }
+    .lang {
+      grid-column: 5 / 9;
+    }
+  }
+
+  /* ---------- Desktop: brand | transfers | company | contact, then disclosure | legal | language ---------- */
+  @media (min-width: 1100px) {
+    .footer .page-grid {
+      row-gap: var(--space-6);
+    }
+    .hairline {
+      margin-bottom: 0;
+    }
+    .brand,
+    .services,
+    .company,
+    .contact,
+    .legal,
+    .lang,
+    .disclosure {
+      order: 0;
+    }
+    .brand {
+      grid-column: 1 / 5;
+      grid-row: 2;
+    }
+    .services {
+      grid-column: 5 / 8;
+      grid-row: 2;
+    }
+    .company {
+      grid-column: 8 / 10;
+      grid-row: 2;
+    }
+    .contact {
+      grid-column: 10 / 13;
+      grid-row: 2;
+    }
+    .disclosure {
+      grid-column: 1 / 8;
+      grid-row: 3;
+    }
+    .legal {
+      grid-column: 8 / 10;
+      grid-row: 3;
+    }
+    .lang {
+      grid-column: 10 / 13;
+      grid-row: 3;
+    }
+    .legal li,
+    .lang li {
+      min-height: 0;
+    }
+    .lang .links-inline {
+      margin-left: 0;
+    }
+    .lang a {
+      padding-inline: 0;
+    }
+    .lang li + li::before {
+      margin-inline: 8px;
+    }
+  }
+</style>

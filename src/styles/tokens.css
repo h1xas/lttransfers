@@ -1,0 +1,148 @@
+/*
+  Design tokens. Everything visual that is shared lives here.
+  Source of truth: Homepage Wireframe & Creative Direction, section C.
+
+  Breakpoints (media queries cannot read custom properties, so they are literal):
+    mobile  < 768px     4 columns
+    tablet  768–1099px  8 columns
+    desktop ≥ 1100px    12 columns
+*/
+
+:root {
+  /* Colour */
+  --stone: #f1efea;
+  --stone-2: #e6e3dc;
+  --paper: #faf9f6;
+  --graphite: #1e2226;
+  --graphite-2: #4f555b;
+  --bone: #edeae3;
+  --pine: #2f4a42;
+  --pine-light: #8fb3a6;
+  --ash: #a3a9ae;
+  /* Errors only: inline error text, the 2px error edge and the send-failure rule (Request Flow Wireframe 2.4). */
+  --error: #8e2f2f;
+
+  /* Derived states */
+  --graphite-hover: #2d3237;
+  --graphite-press: #14171a;
+  --hairline: color-mix(in srgb, var(--graphite) 14%, transparent);
+  --hairline-dark: color-mix(in srgb, var(--bone) 16%, transparent); /* on graphite */
+  /* Type families */
+  --font-sans: 'Instrument Sans', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --weight-regular: 400;
+  --weight-medium: 500;
+
+  /* Type scale (mobile first; desktop values set in the 768px block below) */
+  --fs-display-xl: 2.25rem; /* 36 */
+  --fs-display-l: 1.875rem; /* 30 */
+  --fs-figure-xl: 3.5rem; /* 56 — certainty figures (24/7, 4) */
+  --fs-title: 1.25rem; /* 20 */
+  --fs-route: 1.125rem; /* 18 */
+  --fs-body-l: 1.125rem; /* 18 */
+  --fs-body: 1rem; /* 16 */
+  --fs-small: 0.875rem; /* 14 */
+  --fs-label: 0.75rem; /* 12 */
+  --fs-code: 0.8125rem; /* 13 */
+  --fs-field: 1.125rem; /* 18 — inputs stay ≥16px so iOS does not zoom */
+
+  --lh-display: 1.04;
+  --lh-body: 1.55;
+  --track-display: -0.02em;
+  --track-upper: 0.03em;
+  --track-label: 0.08em;
+
+  /* Spacing, 8px base */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --space-6: 4rem;
+  --space-7: 6rem;
+
+  /* Layout grid: mobile */
+  --grid-cols: 4;
+  --grid-margin: 20px;
+  --grid-gutter: 16px;
+
+  /*
+    Container system. One canvas for every section (.page-grid).
+    At the 1440px reference this resolves to the approved 80px margins and
+    1280px content. Above 1440px the margins keep scaling with the viewport
+    (5.56vw) so large screens do not collapse into a narrow column, until
+    content reaches --content-max. Set --content-max: 1280px to hard-cap at the
+    wireframe width instead.
+  */
+  --content-max: 1600px;
+  --margin-max: 160px;
+  --grid-max: calc(var(--content-max) + 2 * var(--grid-margin));
+
+  /* Inset of text inside bordered / ruled objects (strip, board) */
+  --object-inset: 16px;
+
+  /* Controls */
+  --radius-ctl: 2px;
+  --radius-doc: 4px; /* the confirmation document */
+  --field-h: 56px;
+  --tap: 48px;
+
+  /* Chrome */
+  --header-h: 56px; /* bar height at rest */
+  --header-h-scrolled: 56px;
+  /* The phone action bar: 48px target + 8px either side, plus the safe area. 0 where the bar does not exist. */
+  --action-bar-h: 0px;
+
+  /* Motion */
+  --dur-fast: 160ms;
+  --dur-header: 200ms;
+  --dur-route: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --fs-display-xl: clamp(2.75rem, 5.6vw, 4rem); /* tablet: full-width headline on 8 columns */
+    --fs-display-l: 3rem; /* 48 */
+    --fs-figure-xl: 4rem; /* 64 */
+    --fs-title: 1.5rem; /* 24 */
+    --fs-route: 1.375rem; /* 22 */
+    --fs-body-l: 1.25rem; /* 20 */
+    --fs-body: 1.0625rem; /* 17 */
+    --fs-label: 0.8125rem; /* 13 */
+
+    --grid-cols: 8;
+    --grid-margin: 32px;
+    --grid-gutter: 24px;
+    --object-inset: 24px;
+  }
+}
+
+@media (min-width: 1100px) {
+  :root {
+    --grid-cols: 12;
+    /* 80px at the 1440px reference; eases down towards 1100px */
+    --grid-margin: clamp(48px, 5.5556vw, var(--margin-max));
+    /*
+      The headline sits on columns 1–8 and must stay on two lines. It is fluid
+      (6vw) and is ≈86px at the 1440 reference and keeps scaling with the canvas to 108px.
+    */
+    --fs-display-xl: clamp(3.75rem, 6vw, 6.75rem);
+    --fs-figure-xl: clamp(4rem, 6.6667vw, 6rem); /* 96 at the 1440 reference */
+    /* Place names on the timetable: a step up from the 22px base where the width allows */
+    --fs-route-board: clamp(1.25rem, 1.6vw, 1.625rem);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --action-bar-h: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* The full navigation bar (links, phone, CTA) needs 1200px; below that the header uses the Menu pattern. */
+@media (min-width: 1200px) {
+  :root {
+    --header-h: 64px;
+  }
+}

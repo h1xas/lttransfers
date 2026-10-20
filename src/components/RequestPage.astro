@@ -1,0 +1,476 @@
+---
+/*
+  /request — one calm enquiry page. The homepage ticket strip, unrolled (Request Flow Wireframe).
+
+  UI + client-side behaviour only. Submitting goes through lib/request (normalise, validate, sendRequest);
+  delivery is a local mock until the real endpoint exists (docs/request-email-integration.md). Nothing typed here is stored, except From / To / Date in the shared `lt-starter`
+  sessionStorage key (so the homepage strips and this page agree).
+
+  Layout: masthead (rail c1–c4 on desktop) | form (c5–c12). DOM order is the mobile order:
+  masthead → form → "Prefer to talk?".
+*/
+import '../styles/request.css';
+import ArrowIcon from './ArrowIcon.astro';
+import ContactLink from './ContactLink.astro';
+import LocationField from './LocationField.astro';
+import SwapButton from './SwapButton.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { fleet, recommendRequest } from '../data/fleet';
+import { isBuilt } from '../data/launch';
+import { hasPhone, hasWhatsApp, site } from '../data/site';
+import type { Lang } from '../data/ui';
+import { languages } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+import { locationPayload } from '../utils/locations';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const s = t.starter;
+const r = t.request;
+
+const vehicles = [
+  { value: recommendRequest, name: r.vehicle.recommend },
+  ...fleet.map((v) => ({ value: v.request, name: `${v.brand} ${v.model}` })),
+];
+
+// Real contact values only: no link, row or sentence renders for a placeholder.
+const whatsappUrl = site.contact.whatsapp.url;
+const phoneTel = site.contact.phone.tel;
+const hasTalk = hasPhone || hasWhatsApp;
+const privacyPath = '/privacy/';
+const privacyBuilt = isBuilt(privacyPath);
+
+const payload = locationPayload(s.countries, lang);
+
+// Everything the client script needs that comes from the page: copy, vehicle names, real contact values.
+const config = {
+  lang,
+  htmlLang: languages[lang].htmlLang,
+  vehicles: Object.fromEntries(vehicles.map((v) => [v.value, v.name])),
+  contact: {
+    whatsappUrl,
+    phoneTel,
+    phoneDisplay: site.contact.phone.display,
+  },
+  homeHref: localePath(lang, '/'),
+  copy: {
+    errors: r.errors,
+    methods: r.methods,
+    passengersLabel: r.passengers.label,
+    flight: r.flight,
+    notes: r.notes,
+    submit: r.submit,
+    sending: r.sending,
+    retry: r.retry,
+    success: r.success,
+    failure: r.failure,
+  },
+};
+---
+
+<BaseLayout lang={lang} title={t.meta.requestTitle} description={r.metaDescription} noindex headerCta="off">
+  <!-- The query string carries journey values; it never leaves the site (Request Flow Wireframe 12.4). -->
+  <meta slot="head" name="referrer" content="same-origin" />
+
+  <div class:list={['rq rq-page page-grid', { 'has-talk': hasTalk }]}>
+    <!-- ───────── Masthead ───────── -->
+    <header class="masthead">
+      <h1 id="rq-title" tabindex="-1" data-title>{r.heading}</h1>
+      <p class="lead" data-lead>{r.lead}</p>
+      <p class="aside" data-aside>{r.noAccount}</p>
+
+      <div class="success-actions" data-success-actions hidden>
+        <a class="btn-outline" href={localePath(lang, '/')}>
+          <span>{r.success.home}</span>
+          <ArrowIcon class="btn-arrow" width={24} />
+        </a>
+        {
+          whatsappUrl && (
+            <a class="text-link" href={whatsappUrl} target="_blank" rel="noopener">
+              {r.success.whatsapp}
+              <ArrowIcon class="link-arrow" width={18} />
+            </a>
+          )
+        }
+      </div>
+    </header>
+
+    <!-- ───────── Form region ───────── -->
+    <div class="form-col" data-form-region>
+      <form
+        id="request-form"
+        class="request-form"
+        method="post"
+        novalidate
+        aria-label={r.heading}
+        data-request-form
+        data-airports={s.suggestions.airports}
+        data-cities={s.suggestions.cities}
+        data-available={s.suggestions.available}
+        data-none={s.suggestions.none}
+      >
+        <!-- YOUR JOURNEY -->
+        <section class="group" aria-labelledby="g-journey">
+          <h2 class="group-title label" id="g-journey">{r.groups.journey}</h2>
+          <div class="block">
+            <div class="row row--route">
+              <LocationField id="req-from" name="from" label={s.from} hint={s.locationHint}>
+                <SwapButton label={s.swap} />
+                <p class="err" id="req-from-err" hidden></p>
+              </LocationField>
+              <LocationField id="req-to" name="to" label={s.to} hint={s.locationHint}>
+                <p class="err" id="req-to-err" hidden></p>
+              </LocationField>
+            </div>
+
+            <div class="row row--pair">
+              <div class="field field--date" data-field-key="date">
+                <label for="req-date" class="label">{s.date}</label>
+                <input id="req-date" name="date" type="date" class="input" autocomplete="off" data-date />
+                <p class="err" id="req-date-err" hidden></p>
+              </div>
+
+              <div class="field field--pax" data-field-key="passengers">
+                <div class="pax-main">
+                  <label for="req-pax" class="label">{r.passengers.label}</label>
+                  <input
+                    id="req-pax"
+                    name="passengers"
+                    type="text"
+                    class="input"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    maxlength="3"
+                    value="1"
+                    data-pax
+                  />
+                </div>
+                <div class="stepper">
+                  <button type="button" class="step" data-pax-dec aria-label={r.passengers.decrease} aria-disabled="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M3 8h10"></path></svg>
+                  </button>
+                  <button type="button" class="step" data-pax-inc aria-label={r.passengers.increase}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M3 8h10M8 3v10"></path></svg>
+                  </button>
+                </div>
+                <div class="pax-msg">
+                  <p class="err" id="req-pax-err" hidden></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Only for airport-related journeys. Optional. A full-width last row of the block. -->
+            <div class="row row--single" data-flight-row hidden>
+              <div class="field" data-field-key="flight">
+                <div class="label-row">
+                  <label for="req-flight" class="label">{r.flight.label}</label>
+                  <span class="opt">{r.optional}</span>
+                </div>
+                <input
+                  id="req-flight"
+                  name="flight"
+                  type="text"
+                  class="input"
+                  placeholder={r.flight.placeholder}
+                  autocomplete="off"
+                  autocapitalize="characters"
+                  spellcheck="false"
+                  maxlength="20"
+                />
+                <p class="err" id="req-flight-err" hidden></p>
+              </div>
+            </div>
+          </div>
+          <p class="micro">{r.journeyNote}</p>
+          <!-- Shown at 8 and 8+ only. Guidance, never an error; kept out of the Passengers cell so the cell stays one height. -->
+          <p class="micro" id="req-pax-more" hidden>{r.passengers.more}</p>
+        </section>
+
+        <!-- VEHICLE -->
+        <section class="group" aria-labelledby="g-vehicle">
+          <h2 class="group-title label" id="g-vehicle">{r.groups.vehicle}</h2>
+          <div class="block">
+            <!--
+              Vehicle preference: a disclosure button plus an inline listbox. The list stays in the document flow
+              (it pushes the contact group down) and the real value lives in the hidden `vehicle` input.
+            -->
+            <div class="row row--single" data-vehicle-select>
+              <div class="field field--vehicle" data-field-key="vehicle">
+                <button
+                  type="button"
+                  class="vehicle-trigger"
+                  id="req-vehicle-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="req-vehicle-list"
+                  data-vehicle-trigger
+                >
+                  <span class="label-row">
+                    <span class="label" id="req-vehicle-label">{r.vehicle.label}</span>
+                    <span class="opt">{r.optional}</span>
+                  </span>
+                  <span class="vehicle-value" data-vehicle-value>{vehicles[0].name}</span>
+                  <svg class="vehicle-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M3 6l5 5 5-5"></path></svg>
+                </button>
+                <input type="hidden" id="req-vehicle" name="vehicle" value={recommendRequest} />
+              </div>
+              <ul class="vehicle-list" id="req-vehicle-list" role="listbox" aria-labelledby="req-vehicle-label" tabindex="-1" hidden data-vehicle-list>
+                {
+                  vehicles.map((v, i) => (
+                    <li role="option" id={`req-vehicle-opt-${i}`} data-value={v.value} aria-selected={i === 0 ? 'true' : 'false'}>
+                      {v.name}
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+          <p class="micro">{r.vehicle.note}</p>
+        </section>
+
+        <!-- HOW SHOULD WE CONTACT YOU? -->
+        <section class="group">
+          <fieldset class="method-set">
+            <legend><h2 class="group-title label">{r.groups.contact}</h2></legend>
+            <div class="block">
+              <div class="segments">
+                {
+                  (['whatsapp', 'phone', 'email'] as const).map((m) => (
+                    <label class="seg">
+                      <input type="radio" name="method" value={m} checked={m === 'whatsapp'} data-method />
+                      <span class="seg-dot" aria-hidden="true"></span>
+                      <span class="seg-text">{r.methods[m].option}</span>
+                    </label>
+                  ))
+                }
+              </div>
+              <div class="row row--single row--contact">
+                <div class="field" data-field-key="contact">
+                  <label for="req-contact" class="label" data-contact-label>{r.methods.whatsapp.label}</label>
+                  <input
+                    id="req-contact"
+                    name="contact"
+                    type="tel"
+                    class="input"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    placeholder={r.methods.whatsapp.placeholder}
+                    maxlength="254"
+                    spellcheck="false"
+                    autocapitalize="off"
+                  />
+                  <p class="err" id="req-contact-err" hidden></p>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="block block--notes">
+            <div class="field field--notes" data-field-key="notes">
+              <div class="label-row">
+                <label for="req-notes" class="label">{r.notes.label}</label>
+                <span class="label-meta">
+                  <span class="counter" data-notes-count hidden></span>
+                  <span class="opt">{r.optional}</span>
+                </span>
+              </div>
+              <textarea
+                id="req-notes"
+                name="notes"
+                class="input"
+                rows="3"
+                maxlength="500"
+                placeholder={r.notes.placeholder}
+                autocomplete="off"
+              ></textarea>
+              <p class="hint" id="req-notes-hint" hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Submit -->
+        <div class="submit-area">
+          <p class="count" role="status" data-count></p>
+
+          <div class="failure" role="alert" data-failure hidden>
+            <p class="failure-title">{r.failure.heading}</p>
+            <p class="failure-text">{r.failure.text}</p>
+            {
+              (whatsappUrl || phoneTel) && (
+                <ul class="failure-rows" role="list">
+                  {
+                    whatsappUrl && (
+                      <li>
+                        <a href={whatsappUrl} target="_blank" rel="noopener">
+                          <span>{r.failure.whatsapp}</span>
+                          <ArrowIcon width={18} />
+                        </a>
+                      </li>
+                    )
+                  }
+                  {
+                    phoneTel && (
+                      <li>
+                        <a href={`tel:${phoneTel}`}>
+                          <span>{r.failure.call.replace('{phone}', site.contact.phone.display)}</span>
+                          <ArrowIcon width={18} />
+                        </a>
+                      </li>
+                    )
+                  }
+                </ul>
+              )
+            }
+          </div>
+
+          <button class="submit" type="submit" data-submit>
+            <span class="submit-text" data-submit-text>{r.submit}</span>
+            <ArrowIcon class="submit-arrow" width={24} />
+          </button>
+
+          <p class="privacy">
+            {r.privacy}
+            {
+              privacyBuilt && (
+                <a href={localePath(lang, privacyPath)}>
+                  {r.privacyLink}
+                  <ArrowIcon class="link-arrow" width={14} />
+                </a>
+              )
+            }
+          </p>
+        </div>
+
+        <div class="sr-only" role="status" aria-live="polite" data-status></div>
+        <script type="application/json" data-locations set:html={JSON.stringify(payload)} />
+      </form>
+
+      <!-- Success: replaces the form region. Built from what was sent, in page memory only. -->
+      <section class="recap" data-recap hidden aria-labelledby="g-recap">
+        <h2 class="group-title label" id="g-recap">{r.success.recap}</h2>
+        <dl class="ledger" data-ledger></dl>
+        <p class="honesty">{r.success.honesty}</p>
+      </section>
+    </div>
+
+    {
+      hasTalk && (
+        <aside class="talk" data-talk>
+          <p class="talk-prompt">{t.contact.talkPrompt}</p>
+          <ul class="talk-rows" role="list">
+            {hasPhone && <li><ContactLink kind="phone" /></li>}
+            {
+              hasWhatsApp && (
+                <li>
+                  <ContactLink kind="whatsapp" label={t.contact.whatsapp}>
+                    <Fragment slot="after">
+                      <ArrowIcon class="link-arrow" width={18} />
+                    </Fragment>
+                  </ContactLink>
+                </li>
+              )
+            }
+          </ul>
+        </aside>
+      )
+    }
+  </div>
+
+  <script type="application/json" id="request-config" set:html={JSON.stringify(config)} />
+
+  <!--
+    Prefill, inline and immediately after the form's markup so the fields never paint empty and then fill.
+    Precedence per field: URL value → sessionStorage journey (lt-starter) → empty. Vehicle is URL-only.
+    Contact details and notes are never read from, or written to, the URL or any storage.
+  -->
+  <script is:inline>
+    (function () {
+      var get = function (id) {
+        return document.getElementById(id);
+      };
+      var iso = function (d) {
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10);
+      };
+      var now = new Date();
+      var far = new Date();
+      far.setFullYear(far.getFullYear() + 2);
+      var min = iso(now);
+      var max = iso(far);
+      var date = get('req-date');
+      if (!date) return;
+      date.min = min;
+      date.max = max;
+
+      var params;
+      try {
+        params = new URLSearchParams(location.search);
+      } catch (e) {
+        params = new URLSearchParams('');
+      }
+      var stored = {};
+      try {
+        stored = JSON.parse(sessionStorage.getItem('lt-starter') || '{}') || {};
+      } catch (e) {
+        stored = {};
+      }
+      var clean = function (v) {
+        return typeof v === 'string' ? v.trim().slice(0, 120) : '';
+      };
+      var validDate = function (v) {
+        if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || v < min || v > max) return false;
+        var p = v.split('-').map(Number);
+        var d = new Date(p[0], p[1] - 1, p[2]);
+        return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+      };
+
+      // A place picked or typed on the other language's page ('Riga Airport RIX', 'Ryga') is shown in this page's language.
+      var fold = function (v) {
+        return v.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+      };
+      var places = [];
+      try {
+        places = JSON.parse(document.querySelector('script[data-locations]').textContent || '[]');
+      } catch (e) {
+        places = [];
+      }
+      var localize = function (v) {
+        var k = fold(v);
+        for (var n = 0; n < places.length; n++) if (places[n].x.indexOf(k) !== -1) return places[n].v;
+        return v;
+      };
+
+      ['from', 'to'].forEach(function (key) {
+        var input = get('req-' + key);
+        if (input) input.value = localize(clean(params.get(key)) || clean(stored[key]));
+      });
+      var qd = params.get('date');
+      date.value = validDate(qd) ? qd : validDate(stored.date) ? stored.date : '';
+
+      var wanted = (params.get('vehicle') || '').trim().toLowerCase();
+      var vehicle = get('req-vehicle');
+      var options = document.querySelectorAll('#req-vehicle-list [role="option"]');
+      var shown = document.querySelector('[data-vehicle-value]');
+      if (vehicle && shown && wanted) {
+        for (var i = 0; i < options.length; i++) {
+          var o = options[i];
+          var name = (o.textContent || '').trim();
+          if ((o.getAttribute('data-value') || '').toLowerCase() === wanted || name.toLowerCase() === wanted) {
+            for (var j = 0; j < options.length; j++) options[j].setAttribute('aria-selected', String(j === i));
+            vehicle.value = o.getAttribute('data-value');
+            shown.textContent = name;
+            break;
+          }
+        }
+      }
+    })();
+  </script>
+
+  <script>
+    import '../scripts/request-form';
+  </script>
+</BaseLayout>

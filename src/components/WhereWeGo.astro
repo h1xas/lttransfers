@@ -1,0 +1,240 @@
+---
+/*
+  Where we go: "the index".
+
+  A timetable's contents page: four full-width rows under a 2px graphite rule that
+  carries the section label (same construction as the Popular routes title). Typography
+  and hairlines only: no cards, icons, photography, flags or map.
+
+  Each row is ONE anchor to a service hub (service name, places, arrow). The hubs are
+  built later; `pages/[service].astro` provides technical placeholders so nothing 404s.
+
+  Desktop (≥1100px): name c1–6 · places c7–11 · arrow c12, rows ≥128px.
+    (The wireframe's c1–5 / c6–11 makes "Business & VIP transfers" wrap at 1440; c1–6
+    keeps every name on one line and the description column still takes two lines.)
+  Below 1100px: name over places, arrow at the right of the name, whole row full-bleed
+  so the pressed tint spans the screen. No breakpoint becomes cards.
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const s = t.services;
+---
+
+<section class="where" aria-labelledby="where-title">
+  <div class="page-grid">
+    <div class="index">
+      <h2 class="title label" id="where-title">{s.title}</h2>
+
+      <ul role="list" class="rows">
+        {
+          s.items.map((item) => (
+            <li>
+              <a class="service" href={localePath(lang, `/${item.slug}/`)}>
+                {/* non-breaking around "&" so a wrapped name reads "Business & VIP / transfers", never "Business & / VIP transfers" */}
+                <span class="name">{item.name.replace(' & ', ' & ')}</span>
+                <span class="places">
+                  {item.airports.length > 0
+                    ? item.airports.map((a, i, all) => (
+                        <>
+                          <span class="airport">
+                            {a.place}{' '}
+                            {a.codes.map((code, j) => (
+                              <>
+                                {j > 0 && ' / '}
+                                <span class="code">{code}</span>
+                              </>
+                            ))}
+                            {i < all.length - 1 ? ' ·' : ''}
+                          </span>
+                          {i < all.length - 1 ? ' ' : ''}
+                        </>
+                      ))
+                    : item.description}
+                </span>
+                <span class="go" aria-hidden="true">
+                  <ArrowIcon width={28} />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The preceding section ends with its own generous bottom padding, so this one only needs air below. */
+  .where {
+    padding-block: 0 clamp(72px, 7.8vw, 112px);
+  }
+  .index {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 767px) {
+    /* ~20% less air after the last row: the gap into the FAQ rule was loose on phones */
+    .where {
+      padding-bottom: 56px;
+    }
+  }
+
+  /* Label sits on a 2px graphite rule (same construction as the timetable title). */
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--graphite);
+    text-wrap: nowrap;
+  }
+  .title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--graphite);
+  }
+
+  .rows > li {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .service {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-2);
+    align-items: center;
+    min-height: 92px;
+    /* Full-bleed below 1100px so the pressed tint spans the screen; text stays on the grid margin. */
+    margin-inline: calc(var(--grid-margin) * -1);
+    padding: 15px var(--grid-margin);
+    color: var(--graphite);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .service:active {
+    background: var(--stone-2);
+  }
+  .service:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .name {
+    grid-column: 1;
+    font-size: var(--fs-display-l);
+    font-weight: var(--weight-medium);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    text-wrap: balance;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .places {
+    grid-column: 1;
+    margin-top: 6px;
+    max-width: 36rem;
+    color: var(--graphite-2);
+    font-size: var(--fs-body-l);
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+  /* "Warsaw WAW / WMI" never splits across lines */
+  .airport {
+    white-space: nowrap;
+  }
+  .code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    color: var(--graphite-2);
+  }
+
+  /* Pine arrow: visible without hover (touch), strengthens on hover / focus. */
+  .go {
+    /* level with the name, not centred on the whole row, so it reads as the name's pointer */
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    color: color-mix(in srgb, var(--pine) 68%, transparent);
+    transition:
+      color var(--dur-fast) var(--ease),
+      transform var(--dur-fast) var(--ease);
+  }
+  .go :global(svg) {
+    width: 24px;
+    height: 12px;
+  }
+
+  @media (hover: hover) {
+    .service:hover {
+      background: color-mix(in srgb, var(--graphite) 4%, transparent);
+    }
+    .service:hover .name {
+      transform: translateX(4px);
+    }
+    .service:hover .go {
+      color: var(--pine);
+      transform: translateX(4px);
+    }
+  }
+  .service:focus-visible .name {
+    transform: translateX(4px);
+  }
+  .service:focus-visible .go {
+    color: var(--pine);
+    transform: translateX(4px);
+  }
+
+  /* ---------- Tablet: same stacked row at a larger name ---------- */
+  @media (min-width: 768px) {
+    .service {
+      min-height: 120px;
+      padding-block: 28px;
+    }
+    .name {
+      font-size: clamp(2.5rem, 5vw, 3rem);
+    }
+    .places {
+      margin-top: 10px;
+    }
+    .go :global(svg) {
+      width: 28px;
+      height: 14px;
+    }
+  }
+
+  /* ---------- Desktop: name · places · arrow on the 12-column grid ---------- */
+  @media (min-width: 1100px) {
+    .service {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--grid-gutter);
+      min-height: 128px;
+      margin-inline: 0;
+      padding: 30px var(--object-inset);
+    }
+    .name {
+      grid-column: 1 / 7;
+      grid-row: 1;
+      font-size: clamp(2.5rem, 3.2vw, 3rem);
+    }
+    .places {
+      grid-column: 7 / 12;
+      grid-row: 1;
+      margin-top: 0;
+      max-width: none;
+      font-size: 1.125rem;
+    }
+    .go {
+      grid-column: 12;
+      grid-row: 1;
+      justify-self: end;
+    }
+  }
+</style>

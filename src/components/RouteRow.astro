@@ -1,0 +1,340 @@
+---
+/*
+  One row of the timetable. The whole row is a single link (one tab stop,
+  one focus ring) to /request with From and To prefilled.
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import type { Ui } from '../data/ui';
+
+interface Place {
+  name: string;
+  code?: string;
+}
+
+interface Props {
+  href: string;
+  t: Ui['routes'];
+  from?: Place;
+  to?: Place;
+  duration?: string;
+  price?: string;
+  isDev?: boolean;
+  /** The closing "Any other route" row. */
+  other?: boolean;
+}
+
+const { href, t, from, to, duration, price, isDev = false, other = false } = Astro.props;
+
+// Keep the last word and the IATA code together so a code never wraps onto a line by itself.
+function split(name: string = '') {
+  const words = name.split(' ');
+  const last = words.pop() ?? '';
+  return { head: words.join(' '), last };
+}
+const a = split(from?.name);
+const b = split(to?.name);
+---
+
+{
+  other ? (
+    <a class="route-row board-row is-other" href={href}>
+      <span class="other-label">{t.other.label}</span>
+      <span class="other-places col-other-places">{t.other.places}</span>
+      <span class="other-cta col-other-cta">
+        <span>{t.other.cta}</span>
+        <ArrowIcon class="other-arrow" width={22} />
+      </span>
+    </a>
+  ) : (
+    <a class:list={['route-row', 'board-row', { 'is-dev': isDev }]} href={href}>
+      <span class="path">
+        <span class="from-cell col-from">
+          <span class="place">
+            {a.head}{a.head ? ' ' : ''}<span class="nowrap">{a.last}{from?.code && ' '}{from?.code && <span class="code">{from.code}</span>}</span>
+          </span>
+          <span class="leader" aria-hidden="true"></span>
+          <span class="arrow" aria-hidden="true">
+            <ArrowIcon width={28} />
+          </span>
+        </span>
+        <span class="sr-only"> {t.to} </span>
+        <span class="to-cell col-to">
+          <span class="place">
+            {b.head}{b.head ? ' ' : ''}<span class="nowrap">{b.last}{to?.code && ' '}{to?.code && <span class="code">{to.code}</span>}</span>
+          </span>
+        </span>
+      </span>
+      <span class="meta">
+        <span class="time col-time">{duration}</span>
+        <span class="price col-price">
+          {isDev && (
+            <span class="dev" aria-hidden="true">
+              {t.devMarker}
+            </span>
+          )}
+          {isDev && <span class="sr-only">{t.devNote} </span>}
+          <span class="from-word">{t.from}</span> <span class="amount">{price}</span>
+        </span>
+        <span class="go col-go" aria-hidden="true">
+          <ArrowIcon class="go-arrow" width={20} />
+        </span>
+      </span>
+    </a>
+  )
+}
+
+<style>
+  .route-row {
+    position: relative;
+    display: block;
+    min-height: 72px;
+    /* Below 1100px the row bleeds to the viewport edge so its pressed state spans the screen. */
+    margin-inline: calc(var(--grid-margin) * -1);
+    padding: 12px var(--grid-margin);
+    color: var(--graphite);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .route-row:active {
+    background: var(--stone-2);
+  }
+
+  .path {
+    display: block;
+    font-size: var(--fs-route);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-upper);
+    text-transform: uppercase;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+  .from-cell,
+  .to-cell {
+    display: inline;
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+  /* IATA codes: one style everywhere on the board */
+  .code {
+    margin-left: 0.2em;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: var(--weight-regular);
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--graphite-2);
+  }
+  .leader {
+    display: none;
+  }
+  .arrow {
+    display: inline-block;
+    margin-inline: 8px;
+    vertical-align: middle;
+    color: var(--pine);
+  }
+  .arrow :global(svg) {
+    width: 22px;
+    height: 11px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 0;
+    margin-top: 6px;
+    font-size: 1rem;
+  }
+  .time {
+    color: var(--graphite-2);
+  }
+  .price::before {
+    content: '·';
+    margin-inline: 8px;
+    color: var(--graphite-2);
+  }
+  .from-word {
+    color: var(--graphite-2);
+    font-size: 0.9375rem;
+  }
+  .amount {
+    font-size: 1.0625rem;
+    font-weight: var(--weight-medium);
+  }
+  /* Development placeholders read as provisional: quiet marker, muted figure */
+  .dev {
+    margin-right: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    color: color-mix(in srgb, var(--graphite-2) 72%, transparent);
+    vertical-align: 1px;
+  }
+  .is-dev .amount {
+    color: var(--graphite-2);
+  }
+  .go {
+    margin-left: auto;
+    align-self: center;
+    color: var(--graphite-2);
+  }
+
+  /* "Any other route" */
+  .other-label {
+    display: block;
+    color: var(--graphite-2);
+    font-size: var(--fs-route);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-upper);
+    text-transform: uppercase;
+  }
+  .other-places {
+    display: block;
+    margin-top: 4px;
+    color: var(--graphite-2);
+    font-size: 0.9375rem;
+  }
+  .other-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 1rem;
+    font-weight: var(--weight-medium);
+  }
+  .other-cta :global(.other-arrow) {
+    color: var(--pine);
+  }
+
+  /* ---------- Tablet: same two-line rows, a little more air ---------- */
+  @media (min-width: 768px) {
+    .route-row {
+      padding-block: 18px;
+    }
+    .meta {
+      font-size: 1.0625rem;
+    }
+  }
+
+  /* ---------- Desktop: a printed timetable row ---------- */
+  @media (min-width: 1100px) {
+    .route-row {
+      display: grid; /* track definitions live in styles/board.css */
+      min-height: 76px;
+      margin-inline: 0;
+      padding-block: 0;
+      padding-inline: var(--object-inset);
+    }
+    .route-row:hover,
+    .route-row:focus-visible {
+      background: var(--stone-2);
+    }
+    .path,
+    .meta {
+      display: contents;
+    }
+
+    /* From: name ── route line ── arrow */
+    .from-cell {
+      display: flex;
+      align-items: center;
+    }
+    .to-cell {
+      display: block;
+    }
+    .place {
+      display: block;
+      min-width: 0;
+      line-height: 1.2;
+    }
+    .leader {
+      display: block;
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      height: 1px;
+    }
+    /* The line is only drawn on hover/focus: it runs from the origin name to the arrow,
+       so the arrow reads as the head of an origin → destination route. */
+    .leader::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      width: 100%; /* 12px clear of the name, then to the arrow (8px margin) plus its 4px nudge */
+      height: 1px;
+      background: var(--pine);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--dur-route) var(--ease);
+    }
+    .arrow {
+      flex: none;
+      margin: 0 0 0 8px;
+      transition: transform var(--dur-route) var(--ease);
+    }
+    .arrow :global(svg) {
+      width: 28px;
+      height: 14px;
+    }
+    .route-row:hover .leader::before,
+    .route-row:focus-visible .leader::before {
+      transform: scaleX(1);
+    }
+    .route-row:hover .arrow,
+    .route-row:focus-visible .arrow {
+      transform: translateX(4px);
+    }
+
+    .path {
+      font-size: var(--fs-route-board);
+      letter-spacing: 0.035em;
+    }
+    .time {
+      font-size: 1.0625rem;
+    }
+    .price::before {
+      display: none;
+    }
+    .price {
+      white-space: nowrap;
+    }
+    .amount {
+      font-size: 1.25rem;
+    }
+    .from-word {
+      margin-right: 2px;
+    }
+    .go {
+      margin-left: 0;
+      opacity: 0.6;
+      transition: opacity var(--dur-fast) var(--ease);
+    }
+    .route-row:hover .go,
+    .route-row:focus-visible .go {
+      opacity: 1;
+    }
+
+    .other-label {
+      grid-column: 1 / 5;
+      grid-row: 1;
+    }
+    .other-places {
+      margin-top: 0;
+      font-size: 1.0625rem;
+    }
+    .other-cta {
+      margin-top: 0;
+      font-size: 1.0625rem;
+    }
+    .other-cta :global(.other-arrow) {
+      transition: transform var(--dur-fast) var(--ease);
+    }
+    .route-row:hover .other-cta :global(.other-arrow) {
+      transform: translateX(4px);
+    }
+  }
+</style>

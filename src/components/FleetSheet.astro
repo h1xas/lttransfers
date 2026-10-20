@@ -1,0 +1,353 @@
+---
+/*
+  The cars: "the fleet sheet". Five vehicles on one shared road line.
+
+  Desktop (≥1200px): one sheet of five equal columns. Each column is a subgrid of
+  four shared rows (drawing, name, descriptor, character line), so every name,
+  descriptor and note sits on one baseline. The road is the bottom edge of the
+  drawing row; the cells touch, so it reads as a single continuous line.
+  Below 1200px: a vertical list, one vehicle per row, each on its own short road.
+  Nothing in between: no 2-up grid, no carousel.
+
+  Each vehicle is one link into the request flow carrying a *preference*
+  (`?vehicle=`). The homepage holds no selected state.
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import VehicleDrawing from './VehicleDrawing.astro';
+import { fleet, recommendRequest } from '../data/fleet';
+import type { Lang } from '../data/ui';
+import { format, getUi } from '../utils/i18n';
+import { requestVehicleHref } from '../utils/routes';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const c = t.cars;
+const vehicles = fleet.map((v) => ({
+  ...v,
+  name: `${v.brand} ${v.model}`,
+  href: requestVehicleHref(lang, v.request),
+  ...c.vehicles[v.id],
+}));
+---
+
+<section class="cars" id="cars" aria-labelledby="cars-title">
+  <div class="page-grid">
+    <div class="intro">
+      <h2 id="cars-title">{c.title}</h2>
+      <p class="lead">{c.lead}</p>
+    </div>
+
+    <ul class="sheet" role="list">
+      {
+        vehicles.map((v) => (
+          <li class="vehicle">
+            <a class="link" href={v.href} aria-label={format(c.chooseLabel, { name: v.name })}>
+              <span class="art">
+                <VehicleDrawing id={v.id} />
+              </span>
+              <span class="name">
+                {v.brand} <span class="model">{v.model}</span>
+              </span>
+              <span class="descriptor">{v.descriptor}</span>
+              <span class="note">{v.note}</span>
+              <ArrowIcon class="go" width={22} />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="footnote">
+      {c.footnote.before}<a href={requestVehicleHref(lang, recommendRequest)}>{c.footnote.link}</a>{c.footnote.after}
+    </p>
+  </div>
+</section>
+
+<style>
+  .cars {
+    background: var(--stone-2);
+    color: var(--graphite);
+    padding-block: clamp(72px, 8.8vw, 128px) clamp(72px, 8.3vw, 120px);
+  }
+
+  /* ---------- Intro ---------- */
+  .intro {
+    grid-column: 1 / -1;
+    margin-bottom: var(--space-5);
+  }
+  h2 {
+    font-size: var(--fs-display-l);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+  }
+  .lead {
+    max-width: 30rem;
+    margin-top: var(--space-2);
+    text-wrap: balance;
+    color: var(--graphite-2);
+    font-size: var(--fs-body-l);
+    line-height: 1.45;
+  }
+
+  /* ---------- Sheet (list layout by default) ---------- */
+  .sheet {
+    grid-column: 1 / -1;
+    list-style: none;
+    padding: 0;
+    container-type: inline-size; /* the shared drawing scale is measured against this width */
+    border-bottom: 2px solid var(--graphite);
+    /* room a drawing may take in its row: ~40% of the list, never wider than 300px */
+    --art-w: min(40cqw, 300px);
+    --fleet-units: 272; /* list rows: the widest drawing (A8) fills --art-w */
+    --gap: 20px;
+  }
+  .vehicle {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .link {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--art-w) minmax(0, 1fr) auto;
+    grid-template-rows: 1fr auto auto auto 1fr;
+    column-gap: var(--gap);
+    align-items: start;
+    min-height: 96px;
+    padding-block: 20px;
+    color: inherit;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .link:focus-visible {
+    outline-offset: -2px;
+  }
+  .link:active {
+    background: color-mix(in srgb, var(--graphite) 6%, transparent);
+  }
+
+  /* The road: this row's own line, as wide as the drawing column. */
+  .art {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    align-self: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+  }
+  .art::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.5px;
+    height: 1px;
+    background: var(--graphite);
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+
+  .name {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: var(--fs-title);
+    font-weight: var(--weight-medium);
+    line-height: 1.2;
+  }
+  .model {
+    display: block;
+  }
+  .descriptor {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 8px;
+    color: var(--graphite-2);
+    font-size: var(--fs-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    line-height: 1.25;
+  }
+  /* Phone: the column beside the drawing is too narrow for a character line without crowding, so it is omitted. */
+  .note {
+    display: none;
+    grid-column: 2;
+    grid-row: 4;
+    margin-top: 6px;
+    max-width: 22rem;
+    color: var(--graphite-2);
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+  .link :global(.go) {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    align-self: center;
+    color: var(--pine);
+  }
+
+  /* ---------- Footnote ---------- */
+  .footnote {
+    grid-column: 1 / -1;
+    margin-top: var(--space-3);
+    color: var(--graphite-2);
+    font-size: var(--fs-body);
+    line-height: 1.5;
+  }
+  .footnote a {
+    color: var(--graphite);
+    font-weight: var(--weight-medium);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .footnote a:hover {
+    color: var(--pine);
+  }
+
+  @media (hover: hover) {
+    .link:hover {
+      background: color-mix(in srgb, var(--graphite) 5%, transparent);
+    }
+  }
+
+  /* ---------- Tablet list: a wider row, the same shape ---------- */
+  @media (min-width: 768px) {
+    .intro {
+      margin-bottom: var(--space-6);
+    }
+    h2 {
+      font-size: clamp(2.25rem, 3.8vw, 3rem);
+    }
+    .sheet {
+      --gap: var(--space-4);
+    }
+    .link {
+      min-height: 128px;
+      padding-block: 26px;
+    }
+    .note {
+      display: block;
+      font-size: var(--fs-body);
+    }
+  }
+  /* A list row has the width for "Mercedes-Benz E-Class" on one line; the narrow phone row and the sheet column do not. */
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .model {
+      display: inline;
+    }
+  }
+
+  /* ---------- Desktop sheet: five columns on one road ---------- */
+  @media (min-width: 1200px) {
+    .sheet {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-rows: auto auto auto auto;
+      border-top: 1px solid var(--hairline);
+      /* inner room of one column: its width less the padding on both sides */
+      --pad: clamp(16px, 1.75vw, 28px);
+      --art-w: calc(100cqw / 5 - 2 * var(--pad));
+      /* Drawn ~10% larger than the column's inner room: a smaller divisor than the widest drawing, and each
+         drawing steps a few px left into its padding (not the first, which is flush with the heading). */
+      --fleet-units: 243;
+      padding-bottom: 0;
+    }
+    .vehicle {
+      grid-row: 1 / span 4;
+      display: grid;
+      grid-template-rows: subgrid;
+      border-top: 0;
+      --pl: var(--pad); /* the first column starts flush with the heading */
+      --nudge: 10px;
+    }
+    .vehicle:first-child {
+      --pl: 0px;
+      --nudge: 0px;
+    }
+    .vehicle + .vehicle {
+      border-left: 1px solid var(--hairline);
+    }
+
+    .link {
+      grid-row: 1 / -1;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: subgrid;
+      align-items: start;
+      min-height: 0;
+      padding: 0 var(--pad) 28px var(--pl);
+    }
+    .link:focus-visible {
+      outline-offset: -3px;
+    }
+    /* The first column's text is flush with the heading (no left padding): its ring sits outside the text, not across it. */
+    .vehicle:first-child .link:focus-visible {
+      outline-offset: 6px;
+    }
+    .link:active {
+      background: none;
+    }
+
+    .art,
+    .name,
+    .descriptor,
+    .note {
+      grid-column: 1;
+    }
+    .art {
+      grid-row: 1;
+      align-self: stretch;
+      padding-top: 48px;
+      /* padding on the link keeps text off the hairlines; the road must reach them */
+      margin-inline: calc(var(--pl) * -1) calc(var(--pad) * -1);
+      padding-inline: var(--pl) var(--pad);
+    }
+    .art :global(.drawing) {
+      margin-left: calc(var(--nudge) * -1);
+    }
+    /* the hairline sits left of every cell but the first: close the 1px gap so the road never breaks */
+    .vehicle + .vehicle .art::after {
+      left: -1px;
+    }
+    .name {
+      grid-row: 2;
+      margin-top: 28px;
+      font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+    }
+    .descriptor {
+      grid-row: 3;
+      margin-top: 12px;
+    }
+    .note {
+      grid-row: 4;
+      margin-top: 14px;
+    }
+    .link :global(.go) {
+      display: none;
+    }
+
+    /* Hover / focus: the active drawing stays full graphite, the others recede; the road under it turns pine. */
+    .link:is(:hover, :focus-visible) .art::after {
+      height: 2px;
+      bottom: -1px;
+      background: var(--pine);
+    }
+    .sheet:has(.link:is(:hover, :focus-visible)) .link:not(:hover, :focus-visible) :global(.drawing) {
+      opacity: 0.42;
+    }
+    .link:hover,
+    .link:active {
+      background: none;
+    }
+
+    .footnote {
+      margin-top: var(--space-4);
+    }
+  }
+</style>

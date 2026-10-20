@@ -1,0 +1,384 @@
+---
+/*
+  The booking starter: one joined strip (From ⇄ To · Date · Request a price).
+  A plain GET form to /request, so it works without JavaScript; the script adds
+  suggestions, the swap control and tidy query strings.
+
+  Desktop columns deliberately match the route board below (see RouteBoard.astro):
+    From c1–c4 | To c5–c7 | Date c8–c9 | button c10–c12
+*/
+import ArrowIcon from './ArrowIcon.astro';
+import LocationField from './LocationField.astro';
+import SwapButton from './SwapButton.astro';
+import type { Lang } from '../data/ui';
+import { locationPayload } from '../utils/locations';
+import { getUi, localePath } from '../utils/i18n';
+
+interface Props {
+  /** Unique prefix for element ids (the starter returns later in the page). */
+  id: string;
+  lang: Lang;
+  /** Marks the primary starter: the header CTA appears once it has left the viewport. */
+  hero?: boolean;
+  /** The strip sits on graphite (closing band): same component, edge drawn in bone. */
+  onDark?: boolean;
+}
+
+const { id, lang, hero = false, onDark = false } = Astro.props;
+const t = getUi(lang);
+const s = t.starter;
+
+const payload = locationPayload(s.countries, lang);
+---
+
+<form
+  class="starter"
+  action={localePath(lang, '/request/')}
+  method="get"
+  aria-label={s.label}
+  data-starter
+  data-hero-starter={hero ? '' : undefined}
+  data-on-dark={onDark ? '' : undefined}
+  data-airports={s.suggestions.airports}
+  data-cities={s.suggestions.cities}
+  data-available={s.suggestions.available}
+  data-none={s.suggestions.none}
+>
+  <LocationField id={`${id}-from`} name="from" label={s.from} hint={s.locationHint}>
+    <SwapButton label={s.swap} />
+  </LocationField>
+
+  <LocationField id={`${id}-to`} name="to" label={s.to} hint={s.locationHint} />
+
+  <div class="field field-date">
+    <label for={`${id}-date`} class="label">{s.date}</label>
+    <input id={`${id}-date`} name="date" type="date" class="input" data-date />
+  </div>
+
+  <button class="submit" type="submit">
+    <span class="submit-text">{s.submit}</span>
+    <ArrowIcon class="submit-arrow" width={24} />
+  </button>
+
+  <div class="sr-only" role="status" aria-live="polite" data-status></div>
+  <script type="application/json" data-locations set:html={JSON.stringify(payload)} />
+</form>
+
+<style>
+  .starter {
+    --divider: color-mix(in srgb, var(--graphite) 28%, transparent);
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--graphite);
+    border-radius: var(--radius-ctl);
+  }
+  /* On graphite the 1px edge turns bone: it frames the paper strip and keeps the graphite button's shape. */
+  .starter[data-on-dark] {
+    border-color: var(--bone);
+  }
+
+  /* ---------- Fields (mobile: a stacked, joined block) ---------- */
+  .starter :global(.field) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: var(--field-h);
+    padding: 8px 16px;
+  }
+  .starter :global(.field + .field) {
+    border-top: 1px solid var(--divider);
+  }
+  .starter :global(.field)::after {
+    /* focus edge: a 2px pine line along the bottom of the field */
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--pine);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .starter :global(.field:focus-within)::after {
+    transform: scaleX(1);
+  }
+  .starter :global(.field > .label) {
+    color: var(--graphite-2);
+    line-height: 1.1;
+  }
+  .starter :global(.field > .label)::after {
+    /* the whole cell is a click target for its input */
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .starter :global(.input) {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    font-size: var(--fs-field);
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.005em;
+    color: var(--graphite);
+    text-overflow: ellipsis;
+  }
+  .starter :global(.input::placeholder) {
+    color: var(--graphite-2);
+    font-weight: var(--weight-regular);
+    opacity: 1;
+  }
+  .starter :global(input[type='date']) {
+    color-scheme: light;
+    font-variant-numeric: tabular-nums;
+  }
+  .starter :global(input[type='date']::-webkit-calendar-picker-indicator) {
+    cursor: pointer;
+    opacity: 0.7;
+  }
+  .starter :global(input[data-combobox]) {
+    padding-right: 52px; /* room for the swap control */
+  }
+  .field-date :global(.input) {
+    min-width: 0;
+  }
+
+  /* ---------- Submit ---------- */
+  .submit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: var(--field-h);
+    padding: 0 16px;
+    background: var(--graphite);
+    color: var(--bone);
+    border: 0;
+    border-radius: 0 0 1px 1px;
+    font-size: 0.8125rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: left;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .submit:hover {
+    background: var(--graphite-hover);
+  }
+  .submit:active {
+    background: var(--graphite-press);
+  }
+  .submit :global(.submit-arrow) {
+    flex: none;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .submit:hover :global(.submit-arrow) {
+    transform: translateX(4px);
+  }
+  .submit:focus-visible {
+    outline-offset: -4px;
+    outline-color: var(--bone);
+  }
+
+  /* ---------- Tablet: two rows on the 8-column grid ---------- */
+  @media (min-width: 768px) {
+    .starter {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      column-gap: var(--grid-gutter);
+      padding-inline: var(--object-inset);
+    }
+    .starter :global(.field) {
+      min-height: 72px;
+      margin-inline: calc(var(--grid-gutter) / -2);
+      padding-inline: calc(var(--grid-gutter) / 2);
+      border-top: 0;
+    }
+    .starter :global(.field + .field) {
+      border-top: 0;
+    }
+    .starter > :global(.field:nth-child(1)) {
+      grid-column: 1 / 5;
+      margin-left: calc(var(--object-inset) * -1);
+      padding-left: var(--object-inset);
+    }
+    .starter > :global(.field:nth-child(2)) {
+      grid-column: 5 / 9;
+      border-left: 1px solid var(--divider);
+    }
+    .starter > :global(.field:nth-child(3)) {
+      grid-column: 1 / 5;
+      margin-left: calc(var(--object-inset) * -1);
+      padding-left: var(--object-inset);
+      border-top: 1px solid var(--divider);
+    }
+    .starter > .submit {
+      grid-column: 5 / 9;
+      grid-row: 2;
+      margin: 0 calc(var(--object-inset) * -1) 0 calc(var(--grid-gutter) / -2);
+      width: auto;
+      min-height: 72px;
+      padding: 0 24px;
+      border-radius: 0 0 1px 0;
+    }
+    .starter {
+      --swap-right: calc(var(--grid-gutter) / 2 + 4px);
+    }
+    .starter :global(input[data-combobox]) {
+      padding-right: 52px;
+    }
+    .starter :global(.suggestions) {
+      left: 0;
+      right: auto;
+      min-width: max(100%, 300px);
+    }
+  }
+
+  /* ---------- Desktop: one strip, columns matching the board ---------- */
+  @media (min-width: 1100px) {
+    .starter {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      min-height: 96px;
+    }
+    .starter :global(.field) {
+      min-height: 96px;
+      gap: 6px;
+    }
+    .starter :global(.field > .label) {
+      letter-spacing: 0.1em;
+    }
+    .starter :global(.input) {
+      height: 30px;
+      font-size: 1.25rem;
+      letter-spacing: -0.01em;
+    }
+    .starter {
+      --swap-right: 4px; /* centred on the arrow column of the board below */
+    }
+    .starter > :global(.field:nth-child(1)) {
+      grid-column: 1 / 5;
+    }
+    .starter > :global(.field:nth-child(2)) {
+      grid-column: 5 / 8;
+    }
+    .starter > :global(.field:nth-child(3)) {
+      grid-column: 8 / 10;
+      margin-left: calc(var(--grid-gutter) / -2);
+      padding-left: calc(var(--grid-gutter) / 2);
+      border-top: 0;
+      border-left: 1px solid var(--divider);
+    }
+    .starter > .submit {
+      grid-column: 10 / 13;
+      grid-row: 1;
+      min-height: 96px;
+      padding: 0 32px;
+      border-radius: 0 1px 1px 0;
+      font-size: 0.875rem;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  @media (min-width: 768px) {
+    /* only the From field carries the swap control */
+    .starter > :global(.field:nth-child(2) input[data-combobox]) {
+      padding-right: 0;
+    }
+  }
+
+  /* Narrow desktop: the same columns, slightly tighter fields */
+  @media (min-width: 1100px) and (max-width: 1279px) {
+    .starter > .submit {
+      padding: 0 20px;
+      font-size: 0.8125rem;
+      letter-spacing: 0.05em;
+    }
+    .starter :global(.input) {
+      font-size: 1.0625rem;
+    }
+    .starter :global(input[data-combobox]) {
+      padding-right: 40px;
+    }
+    .starter {
+      --swap-right: 6px;
+    }
+  }
+</style>
+
+<script>
+  import { initCombobox, initSwap, localDate, readLocations } from '../scripts/location-combobox';
+  import { JOURNEY_FIELDS, localizePlace, readJourney, writeJourney, type JourneyState } from '../scripts/journey-store';
+
+  /*
+    From / To / Date live in sessionStorage so the closing starter opens with what the visitor already entered in
+    the hero (and a return from /request keeps it). No library: the fields themselves are the state.
+  */
+  const field = (form: HTMLFormElement, name: string) =>
+    form.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+
+  function applyState(form: HTMLFormElement, state: JourneyState) {
+    const places = readLocations(form);
+    for (const name of JOURNEY_FIELDS) {
+      const input = field(form, name);
+      const value = state[name];
+      if (!input || input === document.activeElement) continue;
+      if (name === 'date' && value && input.min && value < input.min) continue; // a past date is not carried over
+      // A place typed on the other language's page is shown in this page's language.
+      if (value !== undefined) input.value = name === 'date' ? value : localizePlace(value, places);
+    }
+  }
+
+  function syncStarter(form: HTMLFormElement) {
+    const save = () => {
+      const state: JourneyState = {};
+      for (const name of JOURNEY_FIELDS) state[name] = field(form, name)?.value.trim() ?? '';
+      writeJourney(state);
+      document.querySelectorAll<HTMLFormElement>('form[data-starter]').forEach((other) => {
+        if (other !== form) applyState(other, state);
+      });
+    };
+    form.addEventListener('change', save);
+    form.addEventListener('submit', save);
+    applyState(form, readJourney());
+    // Back/forward cache: the page returns as it was left, but another starter may have moved on.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) applyState(form, readJourney());
+    });
+  }
+
+  document.querySelectorAll<HTMLFormElement>('form[data-starter]').forEach((form) => {
+    const all = readLocations(form);
+    const status = form.querySelector<HTMLElement>('[data-status]');
+    const inputs = [...form.querySelectorAll<HTMLInputElement>('input[data-combobox]')];
+    const closers = inputs.map((input) => initCombobox(form, input, all, status));
+
+    initSwap(form, inputs, closers);
+
+    // No past dates
+    const date = form.querySelector<HTMLInputElement>('input[data-date]');
+    if (date) date.min = localDate();
+
+    // Shared session state: what is typed in one starter carries into the other (hero ⇄ closing).
+    syncStarter(form);
+
+    // Keep the request URL clean: drop empty fields, trim the rest.
+    form.addEventListener('formdata', (e) => {
+      for (const [key, value] of [...e.formData.entries()]) {
+        if (typeof value !== 'string') continue;
+        const trimmed = value.trim();
+        if (trimmed) e.formData.set(key, trimmed);
+        else e.formData.delete(key);
+      }
+    });
+  });
+</script>

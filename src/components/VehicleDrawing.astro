@@ -1,0 +1,60 @@
+---
+/*
+  One vehicle line drawing. Purely decorative (the visible name is the label), so
+  the SVG is hidden from assistive technology. The geometry lives in
+  data/vehicleDrawings.ts; all five share one scale and one stroke.
+
+  Width follows the parent's `--art-w` (the room one column or row gives a drawing)
+  times this vehicle's share of the widest one (`--fleet-units`, set by the sheet), so a V-Class is always longer than
+  a C-Class on screen, in every layout.
+*/
+import { drawings } from '../data/vehicleDrawings';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const d = drawings[id];
+---
+
+<svg
+  class="drawing"
+  viewBox={`0 0 ${d.w} ${d.h}`}
+  style={`--w:${d.w};aspect-ratio:${d.w} / ${d.h}`}
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d={d.body}></path>
+  {d.windows.map((g) => <path d={g}></path>)}
+  {d.seams.map((s) => <path d={s}></path>)}
+  {
+    d.wheels.map((w) => (
+      <>
+        <circle cx={w.cx} cy={w.cy} r={w.r}></circle>
+        <circle cx={w.cx} cy={w.cy} r={w.hub}></circle>
+      </>
+    ))
+  }
+</svg>
+
+<style>
+  .drawing {
+    display: block;
+    flex: none;
+    width: calc(var(--art-w, 100%) * var(--w) / var(--fleet-units, 272));
+    max-width: none; /* the desktop sheet draws a little wider than the column's inner room */
+    height: auto;
+    overflow: visible; /* tyres sit on the road line, half a stroke below the viewBox */
+    color: var(--graphite);
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity var(--dur-fast) var(--ease);
+  }
+  .drawing :is(path, circle) {
+    vector-effect: non-scaling-stroke;
+  }
+</style>
