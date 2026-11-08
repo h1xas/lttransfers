@@ -1,7 +1,6 @@
 /*
-  Request validation: the approved rules (Request Flow Wireframe 6 and 9), with no browser APIs, so the page and a
-  future server endpoint run exactly the same code. Results are codes, not sentences: the page maps a code to its
-  translated message (data/ui.ts).
+  Request validation: the approved rules (Request Flow Wireframe 6 and 9). Pure functions with no browser APIs.
+  Results are codes, not sentences: the page maps a code to its translated message (data/ui.ts).
 
   Not validated on purpose (9.5): From equal to To, whether a place exists, whether a number is reachable,
   whether a flight is real, the passengers / vehicle combination.
@@ -38,25 +37,10 @@ function isRealDate(value: string): boolean {
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
-/** Today (YYYY-MM-DD) in a given time zone. */
-export function todayInTimeZone(timeZone: string, now = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-}
-
 /** today → today + 2 years: the window the date input and the rules share. */
 export function dateBounds(today: string): DateBounds {
   const [y, m, d] = today.split('-').map(Number);
   return { min: today, max: iso(new Date(Date.UTC(y + 2, m - 1, d))) };
-}
-
-/**
-  Server window: from *yesterday* in Europe/Vilnius, so a traveller in another time zone is never wrongly
-  rejected (9.4). The browser uses its own local `dateBounds` instead.
-*/
-export function serverDateBounds(now = new Date()): DateBounds {
-  const today = todayInTimeZone('Europe/Vilnius', now);
-  const [y, m, d] = today.split('-').map(Number);
-  return { min: iso(new Date(Date.UTC(y, m - 1, d - 1))), max: dateBounds(today).max };
 }
 
 // ---------- One field ----------
@@ -99,9 +83,9 @@ export type ValidationResult = { ok: true; request: RequestPayload } | { ok: fal
 
 /**
   Normalises, then validates every field. On success the returned `request` is the canonical payload.
-  Pass the browser's own `dateBounds(...)` from the page; a server uses the default `serverDateBounds()`.
+  The page passes its own `dateBounds(...)`, so the window follows the visitor's local day.
 */
-export function validateRequest(raw: RawRequest, dates: DateBounds = serverDateBounds()): ValidationResult {
+export function validateRequest(raw: RawRequest, dates: DateBounds): ValidationResult {
   const draft: RequestDraft = normalizeRequest(raw);
   const ctx: FieldContext = { method: draft.method, dates };
   const errors: FieldErrors = {};

@@ -6,10 +6,10 @@
 */
 import '../styles/board.css';
 import RouteRow from './RouteRow.astro';
-import { assertRoutesReleasable, hasDevRoutes, routes } from '../data/routes';
+import { routes } from '../data/routes';
 import type { Lang } from '../data/ui';
 import { getUi } from '../utils/i18n';
-import { requestHref, resolveRoute } from '../utils/routes';
+import { resolveRoute } from '../utils/routes';
 
 interface Props {
   lang: Lang;
@@ -19,8 +19,7 @@ const { lang } = Astro.props;
 const t = getUi(lang);
 const r = t.routes;
 
-assertRoutesReleasable();
-const rows = routes.map((route) => resolveRoute(route, lang, t));
+const rows = routes.map((route) => resolveRoute(route, lang));
 ---
 
 <section class="routes" aria-labelledby="popular-routes">
@@ -31,7 +30,6 @@ const rows = routes.map((route) => resolveRoute(route, lang, t));
       <div class="head board-row" aria-hidden="true">
         <span class="label col-from">{r.columns.from}</span>
         <span class="label col-to">{r.columns.to}</span>
-        <span class="label col-time">{r.columns.byRoad}</span>
         <span class="label col-price">{r.columns.price}</span>
       </div>
 
@@ -44,22 +42,16 @@ const rows = routes.map((route) => resolveRoute(route, lang, t));
                 t={r}
                 from={row.from}
                 to={row.to}
-                duration={row.duration}
                 price={row.price}
-                isDev={row.isDev}
               />
             </li>
           ))
         }
-        <li class="other">
-          <RouteRow href={requestHref(lang)} t={r} other />
-        </li>
       </ul>
 
       <div class="notes">
         <p>{r.clarification}</p>
         <p>{r.oneWay}</p>
-        {hasDevRoutes && <p class="dev-legend">{r.devLegend}</p>}
       </div>
     </div>
   </div>
@@ -110,12 +102,6 @@ const rows = routes.map((route) => resolveRoute(route, lang, t));
   .notes p + p {
     margin-top: 6px;
   }
-  .dev-legend {
-    margin-top: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0;
-  }
 
   @media (min-width: 768px) {
     .routes {
@@ -135,14 +121,12 @@ const rows = routes.map((route) => resolveRoute(route, lang, t));
       color: var(--graphite-2);
       border-bottom: 1px solid var(--hairline);
     }
-    /* Vertical hairlines at the strip's divider positions: the three column edges after From */
+    /* Vertical hairlines at the strip's divider positions: the column edges after From (To, then Date/Price) */
     .head .col-to,
-    .head .col-time,
     .head .col-price {
       position: relative;
     }
     .head .col-to::before,
-    .head .col-time::before,
     .head .col-price::before {
       content: '';
       position: absolute;

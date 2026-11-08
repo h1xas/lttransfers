@@ -1,12 +1,10 @@
 /*
   Popular routes: the single source for the route board.
 
-  ⚠ DEVELOPMENT DATA. Final "from €" prices have not been supplied. Every route
-  carries `status: 'dev'`, which renders a visible DEV marker. Durations are
-  rough road estimates, also unverified. `amount: null` renders as "€___".
-
-  To go live: set each `amount`, verify `durationMin`, and change `status` to
-  'final'. `npm run build:release` fails while any route is still 'dev'.
+  Each route stores stable ids only (location ids from data/locations.ts) and an indicative starting price.
+  Display names are localised from the location data, never from route logic, so "Riga" / "Ryga" and
+  "Warsaw" / "Varšuva" are the same route. Prices are "from" prices: the exact price is always agreed
+  individually. No travel durations are stored because none have been confirmed.
 */
 
 export interface Route {
@@ -14,30 +12,18 @@ export interface Route {
   /** Location ids, see data/locations.ts */
   from: string;
   to: string;
-  /** Typical road time in minutes. */
-  durationMin: number;
-  price: { amount: number | null; currency: 'EUR' };
-  status: 'dev' | 'final';
+  /** Indicative starting price. */
+  price: { amount: number; currency: 'EUR' };
 }
+
+const eur = (amount: number): Route['price'] => ({ amount, currency: 'EUR' });
 
 export const routes: Route[] = [
-  // The one working placeholder price supplied so far.
-  { id: 'kaunas-rix', from: 'kaunas', to: 'rix', durationMin: 200, price: { amount: 200, currency: 'EUR' }, status: 'dev' },
-  { id: 'vilnius-rix', from: 'vilnius', to: 'rix', durationMin: 240, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'siauliai-rix', from: 'siauliai', to: 'rix', durationMin: 130, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'panevezys-rix', from: 'panevezys', to: 'rix', durationMin: 150, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'vno-kaunas', from: 'vno', to: 'kaunas', durationMin: 75, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'kun-vilnius', from: 'kun', to: 'vilnius', durationMin: 75, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'vilnius-waw', from: 'vilnius', to: 'waw', durationMin: 420, price: { amount: null, currency: 'EUR' }, status: 'dev' },
-  { id: 'plq-nida', from: 'plq', to: 'nida', durationMin: 135, price: { amount: null, currency: 'EUR' }, status: 'dev' },
+  { id: 'kaunas-vilnius', from: 'kaunas', to: 'vilnius', price: eur(100) },
+  { id: 'vilnius-klaipeda', from: 'vilnius', to: 'klaipeda', price: eur(250) },
+  { id: 'kaunas-riga', from: 'kaunas', to: 'riga', price: eur(250) },
+  { id: 'vilnius-riga', from: 'vilnius', to: 'riga', price: eur(300) },
+  { id: 'kaunas-nida', from: 'kaunas', to: 'nida', price: eur(200) },
+  { id: 'kaunas-warsaw', from: 'kaunas', to: 'warsaw', price: eur(200) },
+  { id: 'vilnius-warsaw', from: 'vilnius', to: 'warsaw', price: eur(270) },
 ];
-
-export const hasDevRoutes = routes.some((r) => r.status === 'dev');
-
-/** Release builds must not contain placeholder prices. */
-export function assertRoutesReleasable(): void {
-  if (import.meta.env.MODE === 'release' && hasDevRoutes) {
-    const ids = routes.filter((r) => r.status === 'dev').map((r) => r.id).join(', ');
-    throw new Error(`Release build blocked: routes still carry development placeholders (${ids}).`);
-  }
-}

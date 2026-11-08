@@ -1,33 +1,29 @@
 /*
-  Business and contact details.
+  Brand and contact details.
 
-  Nothing here is real yet. `tel` and `whatsapp` stay null until the business
-  supplies them: while null, the UI prints the placeholder `display` text and
-  does NOT render a working tel: / wa.me link.
+  `name` is the public brand, written exactly "LTTransfers". `operator` is the legal service provider
+  (MKT PASLAUGOS): the brand is never used where legal identification is required.
+
+  The operator register below holds only what is confirmed. Every other field stays null and its row is
+  simply not rendered: nothing is printed as a blank or "to be confirmed". The company is not VAT-registered,
+  so there is deliberately no VAT field. Open items are tracked in docs/legal-launch-checklist.md.
 */
 
 export const site = {
-  name: 'LT Transfers',
+  name: 'LTTransfers',
+  domain: 'lttransfers.lt',
   operator: 'MKT PASLAUGOS',
   contact: {
     phone: {
-      tel: null as string | null, // e.g. '+37060000000' once supplied
-      display: '+370 6__ _____',
+      tel: '+37065633777' as string | null,
+      display: '+370 656 33777',
     },
     whatsapp: {
-      url: null as string | null, // e.g. 'https://wa.me/37060000000' once supplied
+      // Same number as the phone. Digits only after wa.me, no plus sign.
+      url: 'https://wa.me/37065633777' as string | null,
     },
-    // Not confirmed. The certainty section prints an email row only once this is set. Viber is not used.
-    email: null as string | null,
+    email: 'info@lttransfers.lt' as string | null,
   },
-  /*
-    Operator register (certainty section). Only the operator's name is confirmed.
-    Every other field stays null and its row is simply not rendered: nothing is
-    printed as a blank or "to be confirmed". Fill a value in and the row appears.
-    The company is not VAT-registered, so there is deliberately no VAT field.
-    TODO(business): legal form, company code, registered address (if shown publicly),
-    passenger-transport permit and insurance (only if they will be shown).
-  */
   register: {
     legalForm: null as string | null,
     companyCode: null as string | null,
@@ -39,3 +35,4 @@ export const site = {
 
 export const hasPhone = site.contact.phone.tel !== null;
 export const hasWhatsApp = site.contact.whatsapp.url !== null;
+export const hasEmail = site.contact.email !== null;

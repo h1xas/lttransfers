@@ -10,7 +10,7 @@ import type { ServicePageContent, ServiceSlug } from './servicePages';
 export const lt: Record<ServiceSlug, ServicePageContent> = {
   'airport-transfers': {
     slug: 'airport-transfers',
-    metaTitle: 'Pervežimai iš ir į oro uostus | LT Transfers',
+    metaTitle: 'Pervežimai iš ir į oro uostus | LTTransfers',
     metaDescription:
       'Privatūs iš anksto užsakomi pervežimai iš ir į Vilniaus, Kauno, Palangos, Rygos ir Varšuvos oro uostus. Atsiųskite maršrutą ir datą – pateiksime kainos pasiūlymą.',
     h1: 'Pervežimai iš ir į oro uostus',
@@ -50,11 +50,16 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
       },
       {
         id: 'routes',
-        heading: 'Populiarūs oro uostų maršrutai',
+        heading: 'Oro uostų maršrutų pavyzdžiai',
         blocks: [
           {
             type: 'journeys',
-            items: [{ routeId: 'kaunas-rix' }, { routeId: 'vno-kaunas' }, { routeId: 'kun-vilnius' }, { routeId: 'vilnius-waw' }],
+            items: [
+              { from: 'kaunas', to: 'rix' },
+              { from: 'vno', to: 'kaunas' },
+              { from: 'kun', to: 'vilnius' },
+              { from: 'vilnius', to: 'waw' },
+            ],
             more: { label: 'Visi populiarūs maršrutai', path: '/#popular-routes' },
           },
         ],
@@ -83,9 +88,9 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
 
   'business-vip-transfers': {
     slug: 'business-vip-transfers',
-    metaTitle: 'Verslo ir VIP pervežimai | LT Transfers',
+    metaTitle: 'Verslo ir VIP pervežimai | LTTransfers',
     metaDescription:
-      'Privatūs iš anksto užsakomi pervežimai svečiams, darbuotojams ir partneriams tarp oro uostų, viešbučių, biurų, susitikimų vietų ir miestų. Sąskaitos išrašomos, kainą suderiname prieš patvirtindami užsakymą.',
+      'Privatūs iš anksto užsakomi pervežimai svečiams, darbuotojams ir partneriams tarp oro uostų, viešbučių, biurų ir miestų. Sąskaitos išrašomos.',
     h1: 'Verslo ir VIP pervežimai',
     lead: 'Privatūs iš anksto užsakomi pervežimai svečiams, darbuotojams, partneriams ir verslo keliautojams.',
     support: 'Pavieniams keleiviams ir grupėms.',
@@ -147,7 +152,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
 
   'long-distance': {
     slug: 'long-distance',
-    metaTitle: 'Tarpmiestiniai pervežimai Lietuvoje | LT Transfers',
+    metaTitle: 'Tarpmiestiniai pervežimai Lietuvoje | LTTransfers',
     metaDescription:
       'Privatūs iš anksto užsakomi pervežimai tarp miestų ir kitų vietų Lietuvoje. Kaina derinama individualiai ir suderinama prieš patvirtinant užsakymą.',
     h1: 'Tarpmiestiniai pervežimai',
@@ -207,9 +212,9 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
 
   'cross-border': {
     slug: 'cross-border',
-    metaTitle: 'Tarptautiniai pervežimai | LT Transfers',
+    metaTitle: 'Tarptautiniai pervežimai | LTTransfers',
     metaDescription:
-      'Privatūs iš anksto užsakomi pervežimai tarp Lietuvos, Latvijos, Estijos ir Lenkijos: iš miesto į miestą, į oro uostus ir viešbučius. Kainą suderiname prieš patvirtindami užsakymą.',
+      'Privatūs iš anksto užsakomi pervežimai tarp Lietuvos, Latvijos, Estijos ir Lenkijos: iš miesto į miestą, į oro uostus ir viešbučius. Kaina suderinama prieš užsakymą.',
     h1: 'Tarptautiniai pervežimai',
     lead: 'Privatūs iš anksto užsakomi pervežimai tarp Lietuvos, Latvijos, Estijos ir Lenkijos.',
     support: 'Iš miesto į miestą, į oro uostą, viešbutį ar kitą adresą.',

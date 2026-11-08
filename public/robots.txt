@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lttransfers.lt/sitemap-index.xml

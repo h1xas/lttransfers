@@ -9,7 +9,7 @@
 import { lt } from './ui.lt';
 
 export const languages = {
-  en: { label: 'English', short: 'EN', htmlLang: 'en', ogLocale: 'en_GB', ready: true },
+  en: { label: 'English', short: 'EN', htmlLang: 'en', ogLocale: 'en_US', ready: true },
   lt: { label: 'Lietuvių', short: 'LT', htmlLang: 'lt', ogLocale: 'lt_LT', ready: true },
 } as const;
 
@@ -18,13 +18,13 @@ export const defaultLang: Lang = 'en';
 export const langs = Object.keys(languages) as Lang[];
 
 const en = {
-  siteName: 'LT Transfers',
+  siteName: 'LTTransfers',
 
   meta: {
-    homeTitle: 'LT Transfers — Private transfers across Lithuania, Latvia, Estonia and Poland',
+    homeTitle: 'Private Transfers in Lithuania & Abroad | LTTransfers',
     homeDescription:
-      'Private airport, business and long-distance transfers across Lithuania, Latvia, Estonia and Poland. Price agreed before your booking is confirmed. Available 24/7 by advance booking.',
-    requestTitle: 'Request a transfer — LT Transfers',
+      'Private pre-booked transfers for airport, business, long-distance and cross-border journeys in Lithuania, Latvia, Estonia and Poland.',
+    requestTitle: 'Request a Transfer Price | LTTransfers',
   },
 
   a11y: {
@@ -94,20 +94,9 @@ const en = {
 
   routes: {
     title: 'Popular routes',
-    columns: { from: 'From', to: 'To', byRoad: 'By road', price: 'From, per journey' },
+    columns: { from: 'From', to: 'To', price: 'From, per journey' },
     from: 'from',
     to: 'to',
-    approx: '~',
-    hours: 'h',
-    minutes: 'min',
-    devMarker: 'DEV',
-    devNote: 'Development placeholder price. Never shipped.',
-    devLegend: 'DEV marks a development placeholder. A release build refuses to ship it.',
-    other: {
-      label: 'Any other route',
-      places: 'Lithuania, Latvia, Estonia and Poland',
-      cta: 'Request a price',
-    },
     clarification:
       'Prices shown are indicative. Your exact price is agreed individually based on the route, vehicle and journey details.',
     oneWay: 'One way. Every route runs in both directions.',
@@ -154,7 +143,7 @@ const en = {
       placeholderBlank: 'To be filled in',
       paymentValue: 'Cash / card / bank transfer',
       caption: 'Example confirmation. Yours shows your confirmed vehicle and journey details.',
-      // Development example data. Not a real journey or price.
+      // Illustrative example only (the figure is captioned as an example). Not a real journey or price.
       example: {
         from: 'Kaunas',
         to: 'Riga Airport',
@@ -165,8 +154,8 @@ const en = {
       },
     },
     link: 'Pricing & payment',
-    // TODO: build the pricing & payment page; until then this resolves to a placeholder route.
-    linkPath: '/pricing-and-payment/',
+    // Price and payment are covered in the Terms & Conditions.
+    linkPath: '/terms/#pricing-and-payment',
   },
 
   included: {
@@ -201,13 +190,14 @@ const en = {
     lead: "Choose a vehicle if you have a preference. We'll confirm availability when we send your price.",
     // Vehicle names are proper nouns and live in data/fleet.ts. A link is a preference, never a reservation.
     chooseLabel: 'Choose {name} as vehicle preference',
+    imageAlt: '{name} used for LTTransfers private transfers',
     // Body descriptors are shown uppercase by CSS. Plain body types: not tiers, not packages.
     vehicles: {
       rav4: { descriptor: 'SUV', note: 'Practical, with room for luggage.' },
       'c-class': { descriptor: 'Saloon', note: 'A comfortable saloon.' },
       'e-class': { descriptor: 'Executive saloon', note: 'A refined saloon for longer journeys.' },
       a8: { descriptor: 'Executive saloon', note: 'A spacious saloon for longer journeys.' },
-      'v-class': { descriptor: 'MPV / group travel', note: 'Room for groups and luggage.' },
+      berlingo: { descriptor: 'MPV', note: 'A practical, spacious option.' },
     } as Record<string, { descriptor: string; note: string }>,
     footnote: {
       before: 'Not sure which to choose? Select “',
@@ -239,7 +229,7 @@ const en = {
       permit: 'Transport permit',
       insurance: 'Insurance',
     },
-    contactLabel: 'Contact LT Transfers',
+    contactLabel: 'Contact LTTransfers',
     whatsappValue: 'Message on WhatsApp',
     email: 'Email',
   },
@@ -293,7 +283,7 @@ const en = {
   faq: {
     title: 'Questions travellers ask',
     support: 'Still unsure? Ask us directly.',
-    contactLabel: 'Contact LT Transfers',
+    contactLabel: 'Contact LTTransfers',
     items: [
       {
         key: 'vehicle',
@@ -346,12 +336,6 @@ const en = {
         answer:
           'Yes. You can arrange the transfer for another passenger. Send us their journey details and a contact number we can use if needed.',
       },
-      {
-        key: 'pets',
-        status: 'confirmed',
-        question: 'Can I travel with a pet?',
-        answer: 'No. LT Transfers does not currently transport animals.',
-      },
     ] as { key: string; status: 'confirmed' | 'tbc'; question: string; answer: string }[],
   },
 
@@ -383,7 +367,7 @@ const en = {
 
   /*
     Footer. Only confirmed information: the operator's name, real contact values from data/site.ts and links to
-    routes that exist or are planned. No cancellation / waiting / delay policy pages exist, so none are linked.
+    pages that exist (services, Privacy, Terms). No cancellation / waiting / delay policy pages exist, so none are linked.
   */
   footer: {
     label: 'Site',
@@ -392,7 +376,6 @@ const en = {
     moreHeading: 'Company',
     contactHeading: 'Contact',
     legalLabel: 'Legal',
-    // TODO(business): write the privacy and terms pages. Until then these resolve to unbuilt routes.
     legal: [
       { key: 'privacy', label: 'Privacy', path: '/privacy/' },
       { key: 'terms', label: 'Terms', path: '/terms/' },
@@ -408,7 +391,8 @@ const en = {
     heading: 'Request a transfer',
     lead: "Send us your journey details. We'll confirm availability and send you a price.",
     noAccount: 'No account required.',
-    metaDescription: "Send us your journey details. We'll confirm availability and send you a price.",
+    metaDescription:
+      'Request a price for a private transfer in Lithuania, Latvia, Estonia or Poland. Send your journey details and we’ll confirm availability and send you a price.',
     optional: 'Optional',
     groups: {
       journey: 'Your journey',
@@ -479,8 +463,12 @@ const en = {
     submit: 'Send request',
     sending: 'Sending…',
     retry: 'Try again',
-    privacy: 'We use these details only to respond to your transfer request. No customer account is created.',
-    privacyLink: 'Privacy',
+    // The link text sits inside the sentence: before + link + after.
+    privacy: {
+      before: 'We use these details to respond to your transfer request. See our ',
+      link: 'Privacy Policy',
+      after: '.',
+    },
     failure: {
       heading: "We couldn't send your request.",
       text: 'Please try again or contact us directly on WhatsApp or by phone.',
@@ -489,7 +477,7 @@ const en = {
     },
     success: {
       title: 'Request sent',
-      documentTitle: 'Request sent — LT Transfers',
+      documentTitle: 'Request sent — LTTransfers',
       text: "We've received your journey details. We'll contact you using your selected contact method to discuss availability and price.",
       home: 'Back to homepage',
       whatsapp: 'Message us on WhatsApp',
@@ -506,6 +494,15 @@ const en = {
       honesty:
         'This is your request, not a confirmed booking. Your booking is confirmed once the price and journey details are agreed.',
     },
+  },
+
+  /* Missing-page screen (pages/404.astro, pages/lt/404.astro). Never indexed. */
+  notFound: {
+    title: 'Page not found | LTTransfers',
+    heading: 'Page not found',
+    text: 'The page you’re looking for may have moved or no longer exists.',
+    home: 'Back to homepage',
+    request: 'Request a transfer',
   },
 };
 

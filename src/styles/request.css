@@ -627,9 +627,6 @@
   text-underline-offset: 3px;
 }
 .rq .privacy a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   color: var(--graphite);
   font-weight: var(--weight-medium);
 }

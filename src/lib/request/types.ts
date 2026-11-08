@@ -1,6 +1,6 @@
 /*
-  The canonical transfer request. One shape, used by the page, the validation, the email builder and (at launch)
-  the endpoint. It holds exactly what the Request Flow Wireframe (5.1, 13.2) collects and nothing else:
+  The canonical transfer request. One shape, used by the page, the validation and the Formspree transport. It holds
+  exactly what the Request Flow Wireframe (5.1) collects and nothing else:
   no UI state, no IP address, user agent, analytics id, timestamp or browser information.
 */
 import type { Lang } from '../../data/ui';
@@ -28,17 +28,14 @@ export interface RequestPayload {
   lang: Lang;
 }
 
-/** Anything a form or a request body might hand us, before it is cleaned up. */
+/** Whatever the form hands us, before it is cleaned up. */
 export type RawRequest = Partial<Record<keyof RequestPayload, unknown>>;
 
 export type FieldKey = 'from' | 'to' | 'date' | 'passengers' | 'flight' | 'method' | 'contact' | 'notes';
 
-/** Why a field failed. The page maps a code to its translated message; a server can return the codes as they are. */
+/** Why a field failed. The page maps a code to its translated message. */
 export type ErrorCode = 'required' | 'invalid' | 'past' | 'too_far' | 'too_long';
 export type FieldErrors = Partial<Record<FieldKey, ErrorCode>>;
 
-/** What `sendRequest` resolves to. The page needs nothing else from a transport. */
-export type RequestResult =
-  | { status: 'success' }
-  | { status: 'validation_error'; errors: FieldErrors }
-  | { status: 'delivery_error' };
+/** What `sendRequest` resolves to. The page needs nothing else from a transport; provider detail never reaches it. */
+export type RequestResult = { status: 'success' } | { status: 'delivery_error' };

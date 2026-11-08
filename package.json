@@ -9,10 +9,12 @@
     "build:release": "astro build --mode release",
     "preview": "astro preview",
     "check": "astro check",
+    "audit:seo": "node scripts/seo-audit.mjs",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.4.0"
   },
   "devDependencies": {

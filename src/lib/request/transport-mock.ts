@@ -1,13 +1,13 @@
 /*
   DEVELOPMENT TRANSPORT. Pretends to deliver a request and delivers nothing.
 
-  It keeps no copy of what it is given: no storage, no file, no database, no console output. Its only job is to
-  let the approved success and failure states be exercised before a real provider exists.
+  Only `npm run dev` with no PUBLIC_FORMSPREE_ENDPOINT ever reaches this file (see send.ts); it is not part of a
+  production build. It keeps no copy of what it is given: no storage, no file, no database, no console output. Its
+  only job is to let the approved success and failure states be exercised without a real form.
 
-  Development only (production builds ignore these query flags and always succeed):
+  Flags, added to /request/ or /lt/request/:
     ?mockFailure=1           every attempt fails (delivery_error)
     ?mockFailure=once        the first attempt fails, "Try again" succeeds
-    ?mockFailure=validation  the server-style response: a contact-value error on the matching field
 */
 import type { RequestPayload, RequestResult } from './types';
 
@@ -17,10 +17,7 @@ export async function sendRequestMock(_request: RequestPayload): Promise<Request
   attempts += 1;
   await new Promise((resolve) => setTimeout(resolve, 250)); // long enough for the "Sending…" state to be seen
 
-  if (import.meta.env.DEV) {
-    const flag = new URLSearchParams(location.search).get('mockFailure');
-    if (flag === '1' || (flag === 'once' && attempts === 1)) return { status: 'delivery_error' };
-    if (flag === 'validation') return { status: 'validation_error', errors: { contact: 'invalid' } };
-  }
+  const flag = new URLSearchParams(location.search).get('mockFailure');
+  if (flag === '1' || (flag === 'once' && attempts === 1)) return { status: 'delivery_error' };
   return { status: 'success' };
 }

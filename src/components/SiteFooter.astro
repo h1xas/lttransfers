@@ -7,19 +7,20 @@
     - the operator's name; the register rows (legal form, code, address, permit, insurance) only when
       a real value exists in data/site.ts, otherwise they are simply absent
     - phone / WhatsApp / email as links only when real (ContactLink / site.ts handle the placeholders)
-    - links to service routes, Cars and How it works (same future URL structure as the header),
-      and Privacy / Terms, which stay plain text until their pages are written (data/launch.ts)
+    - links to service pages, Cars and How it works (same URL structure as the header), and Privacy / Terms
   No social icons, newsletter, wordmark graphic or policy pages that do not exist.
 
   Desktop (≥1100px): brand + operator c1–4 | transfers c5–7 | company c8–9 | contact + language c10–12,
   then the disclosure (c1–8) and legal links (c10–12) on a last row.
   Mobile: a single column in the order brand, operator, contact, services, legal, language, disclosure.
 */
+import { Image } from 'astro:assets';
+import logoLight from '../assets/images/logo-light.png';
 import ContactLink from './ContactLink.astro';
-import { isBuilt } from '../data/launch';
-import { site } from '../data/site';
-import { languages, langs, type Lang } from '../data/ui';
-import { getUi, localePath, stripLocale } from '../utils/i18n';
+import { hasEmail, site } from '../data/site';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+import { languageAlternates } from '../utils/seo';
 
 interface Props {
   lang: Lang;
@@ -36,12 +37,7 @@ const serviceLinks = t.nav.items
 const companyLinks = t.nav.items
   .filter((item) => item.key === 'cars' || item.key === 'how')
   .map((item) => ({ label: item.label, href: localePath(lang, item.path) }));
-// Privacy / Terms render as links only once their pages exist (data/launch.ts); until then they are plain text.
-const legalLinks = f.legal.map((item) => ({
-  label: item.label,
-  href: localePath(lang, item.path),
-  built: isBuilt(item.path),
-}));
+const legalLinks = f.legal.map((item) => ({ label: item.label, href: localePath(lang, item.path) }));
 
 // Register rows print only once the business has confirmed a value.
 const reg = t.certainty.register;
@@ -54,12 +50,13 @@ const registerRows = [
 ].filter((row): row is { label: string; value: string } => row.value !== null);
 
 const pathname = Astro.url.pathname;
-const switchTo = langs.map((l) => ({
-  short: languages[l].short,
-  label: languages[l].label,
-  htmlLang: languages[l].htmlLang,
-  href: localePath(l, stripLocale(pathname)),
-  current: l === lang,
+// Same source as the <head> hreflang links (utils/seo.ts).
+const switchTo = languageAlternates(pathname).map((a) => ({
+  short: a.short,
+  label: a.label,
+  htmlLang: a.htmlLang,
+  href: a.path,
+  current: a.lang === lang,
 }));
 ---
 
@@ -68,7 +65,9 @@ const switchTo = langs.map((l) => ({
     <div class="hairline" aria-hidden="true"></div>
 
     <div class="brand">
-      <a class="wordmark" href={localePath(lang, '/')}>{t.siteName}</a>
+      <a class="wordmark" href={localePath(lang, '/')}>
+        <Image src={logoLight} alt={t.siteName} height={64} />
+      </a>
       <dl class="operator">
         <div>
           <dt>{f.operator}</dt>
@@ -90,7 +89,7 @@ const switchTo = langs.map((l) => ({
       <ul role="list" class="links">
         <li><ContactLink kind="phone" /></li>
         <li><ContactLink kind="whatsapp" label={t.contact.whatsapp} /></li>
-        {site.contact.email && <li><a class="contact-link" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>}
+        {hasEmail && <li><ContactLink kind="email" /></li>}
       </ul>
     </div>
 
@@ -110,7 +109,7 @@ const switchTo = langs.map((l) => ({
 
     <nav class="legal" aria-label={f.legalLabel}>
       <ul role="list" class="links links-inline">
-        {legalLinks.map((link) => <li>{link.built ? <a href={link.href}>{link.label}</a> : <span class="pending">{link.label}</span>}</li>)}
+        {legalLinks.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
       </ul>
     </nav>
 
@@ -156,10 +155,12 @@ const switchTo = langs.map((l) => ({
   /* ---------- Brand + operator ---------- */
   .wordmark {
     display: inline-block;
-    font-size: 1.1875rem;
-    font-weight: var(--weight-medium);
-    letter-spacing: -0.01em;
     text-decoration: none;
+  }
+  .wordmark :global(img) {
+    display: block;
+    width: auto;
+    height: 32px;
   }
   .operator {
     margin-top: var(--space-2);
@@ -215,10 +216,6 @@ const switchTo = langs.map((l) => ({
     display: flex;
     flex-wrap: wrap;
     gap: 0 20px;
-  }
-  /* A legal page that is not written yet: not a link, and visibly quieter than one. */
-  .pending {
-    color: var(--ash);
   }
   .lang .links-inline {
     gap: 0;

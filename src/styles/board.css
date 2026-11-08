@@ -1,12 +1,15 @@
 /*
-  Column map shared by the route board (header, rows, "any other route").
+  Column map shared by the route board (header and rows).
 
   This is what makes the booking strip and the timetable read as one object.
   The strip (RouteStarter.astro) uses the same 12-column track and the same
   object inset (--object-inset), so its dividers land on the board's column edges:
 
       strip   From c1–c4 │ To c5–c7 │ Date c8–c9 │ button c10–c12
-      board   FROM c1–c4 │ TO c5–c7 │ BY ROAD c8–c9 │ PRICE c10–c11 · action c12
+      board   FROM c1–c4 │ TO c5–c7 │ PRICE c8–c11 (right-aligned) · action c12
+
+  There is no travel-time column: only the route and an indicative starting price are confirmed, so the price
+  column starts where the strip's Date column starts and the dividers still line up.
 
   Change a number here and change it in the strip too. Below 1100px the board
   drops the table entirely and rows become two-line blocks.
@@ -23,7 +26,6 @@
   .board-row > *,
   .board-row .col-from,
   .board-row .col-to,
-  .board-row .col-time,
   .board-row .col-price,
   .board-row .col-go {
     grid-row: 1;
@@ -34,23 +36,13 @@
   .col-to {
     grid-column: 5 / 8;
   }
-  .col-time {
-    grid-column: 8 / 10;
-  }
   .col-price {
-    grid-column: 10 / 12;
+    grid-column: 8 / 12;
     justify-self: end;
     text-align: right;
   }
   .col-go {
     grid-column: 12 / 13;
-    justify-self: end;
-  }
-  .col-other-places {
-    grid-column: 5 / 10;
-  }
-  .col-other-cta {
-    grid-column: 10 / 13;
     justify-self: end;
   }
 }

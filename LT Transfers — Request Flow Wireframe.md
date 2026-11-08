@@ -73,7 +73,7 @@ Every field in section 5 carries a one-line justification. A field with no justi
 | --- | --- |
 | Routes | `/request/` (English) and `/lt/request/` (Lithuanian), as already routed. Static page shell. |
 | Title / H1 | `<title>`: "Request a transfer — LT Transfers" (already in `ui.ts`). H1: **Request a transfer**. |
-| Indexing | `noindex` (kept from the placeholder). The canonical URL is `/request/` with no query string. |
+| Indexing | Indexable (it carries useful public information and is in the sitemap). The canonical URL is `/request/` with no query string, so prefilled links (`?from=…&to=…`) and the success / failure screens (client-side state, no URL of their own) never create duplicate pages. |
 | Header | The standard header, with the "Request a price" button **off** (`headerCta="off"`); the page is the destination. No nav item is marked current. |
 | Mobile action bar | Not rendered on this page. |
 | Footer | The standard graphite footer, unchanged. There is no closing band and no second form. |
@@ -612,7 +612,7 @@ Every field has a reason. If the reason is weak, the field is out.
 | 3 | Date | DATE | `type="date"` | `date` | Journey | **Yes** | Availability and price depend on the day. No time field. |
 | 4 | Passengers | PASSENGERS | Text input with − / +: 1 to 8, then **8+** | `passengers` | Journey | **Yes** | Drives vehicle choice. One total; no adults / children split. 8+ means "8 or more", not a service limit. |
 | 5 | Flight number | FLIGHT NUMBER · Optional | Text, placeholder `BT123`. **Conditional**: a full-width row at the end of YOUR JOURNEY. | `flight` | Journey | No | Journey information for airport transfers. Not tracked. |
-| 6 | Vehicle preference | VEHICLE PREFERENCE · Optional | `<select>`: Recommend a vehicle (default) · Toyota RAV4 · Mercedes-Benz C-Class · Mercedes-Benz E-Class · Audi A8 · Mercedes-Benz V-Class | `vehicle` | Vehicle | No | Lets the traveller state a preference. Never a guarantee. |
+| 6 | Vehicle preference | VEHICLE PREFERENCE · Optional | `<select>`: Recommend a vehicle (default) · Toyota RAV4 · Mercedes-Benz C-Class · Mercedes-Benz E-Class · Audi A8 · Citroën Berlingo Multispace | `vehicle` | Vehicle | No | Lets the traveller state a preference. Never a guarantee. |
 | 7 | Contact method | HOW SHOULD WE CONTACT YOU? | Three radios (WhatsApp · Phone · Email), WhatsApp preselected | `method` | Contact | **Yes** | We reply on the channel the traveller prefers. |
 | 8 | Contact value | WHATSAPP NUMBER · PHONE NUMBER · EMAIL (follows 7) | One input whose type, label and autocomplete follow the chosen method | `contact` | Contact | **Yes** | The one way to reach the traveller. Exactly one. |
 | 9 | Notes | ANYTHING WE SHOULD KNOW? · Optional | Textarea, 500 characters | `notes` | Contact (own block) | No | One place for luggage, a stop, a return leg, a large group. |
@@ -622,7 +622,6 @@ Every field has a reason. If the reason is weak, the field is out.
 | Input | `name` | Purpose |
 | --- | --- | --- |
 | Interface language | `lang` (`en` / `lt`) | Derived from the page, never typed. Tells LT Transfers which language to reply in. |
-| Honeypot | `website` | An off-screen field a person never fills (13.5). |
 
 ### 5.3 Non-field elements
 
@@ -656,23 +655,22 @@ The homepage document specified six hairline rows with a selected left edge. Six
 
 ## 6. Field requirements
 
-| Field | Required | Rules (browser and server) | Normalisation |
+| Field | Required | Rules (browser) | Normalisation |
 | --- | --- | --- | --- |
 | From | Yes | 1–120 characters after trim. Free text, with the hint "City, airport or pickup area". The UI does not ask for a street address, but a voluntarily typed one is accepted and never blocked. No list restriction. | Trim, collapse inner whitespace. |
 | To | Yes | As From. | As From. |
 | Date | Yes | A real calendar date in `YYYY-MM-DD`. Not before today; not later than today + 2 years (catches typos like 2062). Today is allowed. | None. |
 | Passengers | Yes | One of `1` to `8`, or `8+`. Default 1. Not a service limit: 8+ simply means "8 or more", with the exact size supplied in Notes. Any other integer 9 or greater is treated as `8+`. | Parse; clamp 9 or more to `8+` on blur. |
-| Vehicle preference | No | One of `recommend`, `toyota-rav4`, `mercedes-benz-c-class`, `mercedes-benz-e-class`, `audi-a8`, `mercedes-benz-v-class`. Anything else is treated as `recommend`. | Server maps the slug to the display name for the email. |
+| Vehicle preference | No | One of `recommend`, `toyota-rav4`, `mercedes-benz-c-class`, `mercedes-benz-e-class`, `audi-a8`, `citroen-berlingo-multispace`. Anything else is treated as `recommend`. | Mapped to the display name in the notification (13.3). |
 | Flight number | No | Only accepted when the journey looks airport-related (7.1). 2–12 characters: letters, digits, space, hyphen. | Trim; uppercase for the email. |
 | Contact method | Yes | `whatsapp`, `phone` or `email`. Preselected, so a normal visitor can never leave it empty. | None. |
 | Contact value | Yes | **WhatsApp and Phone:** 7–15 digits once spaces, `+`, `-`, `(`, `)` and `.` are ignored; no letters. A missing country code is *accepted* (the visitor is not blocked), and the hint is in the placeholder. **Email:** one `@`, a dot after it, no spaces, at most 254 characters. | Trim. Printed as typed. |
 | Notes | No | At most 500 characters after line endings are normalised to `\n`. | Trim; strip control characters except newline. |
 | `lang` | Auto | `en` or `lt`. | None. |
-| `website` | Auto | Must be empty. | None. |
 
 **Required summary:** From, To, Date, Passengers, contact method and its one contact value. **Optional:** vehicle preference, flight number, notes.
 
-**Server rule for every single-line field:** reject or strip carriage returns and line feeds. This prevents email-header injection, because some of these values end up in the subject and Reply-To.
+**Rule for every single-line field:** carriage returns and line feeds are stripped before submission. This prevents header injection, because some of these values end up in the notification subject (`_subject`) and Reply-To (`_replyto`).
 
 ---
 
@@ -714,7 +712,7 @@ WhatsApp is the first option and preselected; the visitor can pick any of the th
 | One input element | A single `contact` input changes label, type, `inputmode`, `autocomplete` and placeholder when the method changes. The block's height never changes. |
 | Remembered values | The input keeps **one remembered value per kind**: one for WhatsApp and Phone (both are phone numbers, so switching between them keeps the number) and one for Email. Switching back restores what was typed. Nothing is stored beyond the page's memory. |
 | Announcement | Changing the method announces the new field politely ("Phone number field."). Focus stays on the radio. |
-| Without JavaScript | The same single `contact` input renders as `type="text"` with the label "Phone, WhatsApp number or email", and the server validates it against the chosen method. |
+| Without JavaScript | The form needs JavaScript (13.9). The single `contact` input renders as `type="text"`, but there is no no-JS submission path; the "Prefer to talk?" WhatsApp and phone links still work. |
 | Reply-To | Only the Email method can produce a Reply-To (13.4). |
 
 ### 7.3 Passengers
@@ -727,7 +725,7 @@ A text input (`type="text"`, `inputmode="numeric"`) with − and + buttons. It i
 | At 8+ | + is disabled because the quick selector ends; the value reads "8+", meaning 8 or more. |
 | Message | At 8 and at 8+ the cell shows, in 13/14 px graphite-2: **More than 8? Tell us the group size in the notes.** This is guidance, not an error, and it is not enforced: a request with 8+ and empty notes is still sent. |
 | Typing | Digits are accepted. A number above 8 (for example 12) becomes 8+ on blur, and the message stays visible so the traveller knows to give the size in the notes. 0, empty or non-numeric input shows "Enter the number of passengers" on blur or submit. |
-| Submitted value | The literal string `8+` for a larger group, otherwise the number `1`–`8`. This is the simpler of the two options: no second field, no group-size logic, and the exact size lives in the notes where the dispatcher reads it. The server accepts `1`–`8` or `8+` and treats any other integer 9 or greater as `8+`. |
+| Submitted value | The literal string `8+` for a larger group, otherwise the number `1`–`8`. This is the simpler of the two options: no second field, no group-size logic, and the exact size lives in the notes where the dispatcher reads it. Normalisation accepts `1`–`8` or `8+` and treats any other integer 9 or greater as `8+`. |
 | Never | No adult / child / infant counters, no second group-size form, no minibus-selection logic, no capacity table, and no wording that suggests larger groups are refused. |
 
 ### 7.4 Vehicle preference
@@ -768,7 +766,7 @@ Example: `/request/?from=Kaunas&to=Riga%20Airport%20RIX&date=2026-11-14&vehicle=
 | --- | --- | --- |
 | `from`, `to` | Any text up to 120 characters | Trimmed; set as the field value (never as HTML). Longer values are cut at 120. A street address already in the URL is shown as given, but the UI itself asks for a city, airport or pickup area (12.4). |
 | `date` | `YYYY-MM-DD` only | Ignored if malformed, in the past, or beyond the maximum. No error is shown on load. |
-| `vehicle` | The slugs from `fleet.ts` (`toyota-rav4`, `mercedes-benz-c-class`, `mercedes-benz-e-class`, `audi-a8`, `mercedes-benz-v-class`, `recommend`). The display name ("Mercedes-Benz E-Class", as in the brief's example) is also accepted, case-insensitive. | Anything else is ignored; the select stays on "Recommend a vehicle". |
+| `vehicle` | The slugs from `fleet.ts` (`toyota-rav4`, `mercedes-benz-c-class`, `mercedes-benz-e-class`, `audi-a8`, `citroen-berlingo-multispace`, `recommend`). The display name ("Mercedes-Benz E-Class", as in the brief's example) is also accepted, case-insensitive. | Anything else is ignored; the select stays on "Recommend a vehicle". |
 | Everything else | — | Ignored. Contact details and notes are **never** read from, or written to, the URL. |
 
 ### 8.3 Precedence and storage
@@ -843,7 +841,6 @@ Lightweight, calm and specific. Validation never blocks on things only LT Transf
 ### 9.4 Dates
 
 - `min` is today in the visitor's local time, `max` today + 2 years, set on the input.
-- The server accepts any date from **yesterday in Europe/Vilnius** onward, so a traveller in another time zone is never wrongly rejected.
 - Same-day dates are allowed. The page makes no judgement about notice; LT Transfers decides when it replies.
 - No availability logic runs in the browser.
 
@@ -928,7 +925,7 @@ Booking reference or confirmation number, payment, a summary styled as a confirm
 
 | Topic | Specification |
 | --- | --- |
-| Trigger | Only after the server confirms the email was accepted by the provider (13). |
+| Trigger | Only after Formspree has returned a successful response (HTTP 2xx with `ok: true`, 13.7). Never on a network error, a rejection or an unexpected response. |
 | Focus | Moves to the new H1 (`tabindex="-1"`) and the page scrolls to the top of the content. No separate live region, to avoid a double announcement. |
 | Document title | Becomes "Request sent — LT Transfers". |
 | Storage | The stored `lt-starter` journey is cleared, so the homepage strips start empty and nothing suggests a duplicate. |
@@ -988,8 +985,7 @@ No customer account is created. Privacy →
 | Values | Every field keeps its value, including contact method, notes and the flight number. |
 | Panel style | A 2 px `--error` top rule, the heading in graphite medium, copy in graphite-2, hairline rows. No coloured fill, no icon, no card. |
 | Clearing | The panel disappears when the next attempt starts. |
-| Causes | One message for network failure, timeout, rate limiting and provider failure. The server does not reveal which. |
-| Server validation errors | If the server rejects a field (rare, since the browser already validated), the message appears in that field's cell like any other, and no failure panel is shown. |
+| Causes | One message for network failure, timeout, rate limiting and provider rejection. The visitor is never told which, and the provider's own error text is never shown. |
 | Retry safety | The retry sends the same data. There is no automatic retry, because a retry after an ambiguous failure could send a duplicate email. |
 
 ---
@@ -1028,7 +1024,7 @@ The sentence under the button links to a privacy page that does not exist yet. T
 
 - who is responsible for the data (MKT PASLAUGOS, with the contact details the business confirms);
 - what is collected, matching 12.1, and why (to respond to the enquiry);
-- who receives it: the email provider (a processor) and the mailbox host;
+- who receives it: Formspree (the form-submission processor) and the mailbox host;
 - how long the email is kept, and who can read it (a business decision);
 - that website access logs may record the page address, including the journey values in the query string, and that the form asks for a city, airport or pickup area rather than a precise address (12.4);
 - the traveller's rights and how to exercise them;
@@ -1054,129 +1050,110 @@ Switching language mid-form therefore keeps the journey and loses contact detail
 
 ### 12.6 Analytics
 
-Allowed events, with generic properties only: `request_page_view`, `request_submit`, `request_success`, `request_error` (error class: `validation`, `network` or `server`; and a `prefilled` boolean; and `lang`).
+Allowed events, with generic properties only: `request_page_view`, `request_submit`, `request_success`, `request_error` (error class: `validation` or `delivery`; and a `prefilled` boolean; and `lang`).
 
 **Never sent to analytics:** From, To, Date, passengers, vehicle, flight number, phone, email, notes, or anything typed in the form. The page address is recorded **without** its query string. Do not run session-replay, heatmap or keystroke-capturing tools on this page. If a tag manager is ever added, `/request` is excluded from variable collection.
 
 ### 12.7 Logging and processors
 
-- The server never logs the request body. Logs record only an error class and a request id.
-- The submission is not written to any database, queue, file or cache (13.6).
-- The email provider and the receiving mailbox keep data under their own terms and retention. The privacy page and the business should know what those are before launch.
+- The website has no backend, so it logs nothing about requests. It does not write a submission to any database, queue, file or cache (13.6).
+- Formspree (the form-submission processor) and the receiving mailbox keep data under their own terms, retention and account settings. The privacy page names Formspree; the business should know the configured retention before launch (`docs/formspree-integration.md`).
+- Cloudflare only hosts the site; it does not handle submissions.
 
 ---
 
-## 13. Future architecture: email via Resend
+## 13. Architecture: static form to Formspree
 
-Documentation only. **Nothing here is built in this task.**
+Decided. Implemented in `src/lib/request/`; setup and operations are in `docs/formspree-integration.md`.
+
+> Superseded: earlier drafts of this section planned a server endpoint (`POST /api/request`) that validated the request, built a plain-text email and sent it through a transactional email provider. That approach is withdrawn. There is no custom backend, no Worker and no email sending in this project.
 
 ### 13.1 Flow
 
 ```
-Browser                        Server                          Provider            Inbox
-  │  POST /api/request  ──────▶  validate (server-side)
-  │  (form body, never GET)       honeypot · limits · rate limit
-  │                               build plain-text email  ────▶  Resend  ────▶  business inbox
-  │  ◀── { ok: true } ─────────   (no persistence)         ◀──── accepted
+Browser (static Astro site, hosted on Cloudflare)
+  │  request form → validation → sendRequest()
+  │  AJAX POST, JSON, Accept: application/json
   ▼
-Success state
+Formspree  ──▶  info@lttransfers.lt
+  │
+  ◀── { "ok": true }
+  ▼
+Success state ("Request sent"), on the same page
 ```
 
-`/request` → `POST /api/request` → server-side validation → Resend → business inbox → success response. The request body is discarded after the call.
+Cloudflare is the host only. Formspree handles transfer-request submissions. The visitor is never redirected to a Formspree page.
 
-### 13.2 Endpoint contract
+### 13.2 Request transport
 
 | Item | Specification |
 | --- | --- |
-| Method / path | `POST /api/request` |
-| Body | `application/x-www-form-urlencoded` (works without JavaScript) or `FormData` from `fetch`. Maximum 4 KB. |
-| Fields | `from`, `to`, `date`, `passengers` (`1`–`8` or `8+`), `vehicle`, `flight`, `method`, `contact`, `notes`, `lang`, `website` |
-| Success | `200 { "ok": true }` once the provider has accepted the message |
-| Validation error | `400 { "ok": false, "errors": { "field": "code" } }`, mapped to inline messages |
-| Failure | `502` (provider) or `429` (rate limit) with `{ "ok": false }`; both show the same failure panel |
-| Honeypot filled | `200 { "ok": true }`, nothing sent (silent, so bots learn nothing) |
-| Cache | `Cache-Control: no-store` on every response |
-| Origin | Reject cross-origin posts by checking the `Origin` header. There are no cookies, so classic CSRF does not apply; this only trims spam. |
-| Without JavaScript | A plain POST is answered with the same `/request` page rendered in the success or error state (never a separate thank-you page). |
+| Seam | `sendRequest(request)` in `src/lib/request/send.ts`. The page never contains provider code. |
+| Provider code | `src/lib/request/transport-formspree.ts` only. Replaceable without touching the page. |
+| Endpoint | `PUBLIC_FORMSPREE_ENDPOINT` (`https://formspree.io/f/<id>`). Public by design; not committed with a real value. |
+| Method / body | `POST`, `Content-Type: application/json`, `Accept: application/json`. Never a GET, never the URL. |
+| Success | HTTP 2xx **and** `ok: true` in the body. Nothing else counts. |
+| Failure | Network error, 10 s timeout, any non-2xx, or an unexpected body → one generic `delivery_error` → the failure panel (11). |
+| Development | No endpoint and `npm run dev`: a mock that delivers nothing. |
+| Production without an endpoint | A visible failure, never a faked success. `build:release` refuses to build. |
 
-### 13.3 Email content
+### 13.3 Notification content
 
-**To:** the business inbox. **Subject:** `New transfer request · Kaunas → Riga Airport RIX` (route values trimmed to about 40 characters each, control characters removed).
-
-Plain text only. No HTML, so there is nothing to escape or to render maliciously. **Empty optional fields are omitted.**
+Fields are submitted under readable names so the Formspree notification reads as a form. Empty optional fields are omitted.
 
 ```
-NEW TRANSFER REQUEST
-
-JOURNEY
-Kaunas → Riga Airport RIX
-
-DATE
-14 November 2026
-
-PASSENGERS
-2
-
-VEHICLE PREFERENCE
-Mercedes-Benz E-Class
-
-FLIGHT
-BT123
-
-CONTACT METHOD
-WhatsApp
-
-CONTACT
-+370 600 00000
-
-NOTES
-2 large suitcases
-
-LANGUAGE
-Lithuanian
+From: Kaunas
+To: Riga Airport RIX
+Date: 14 November 2026
+Passengers: 2
+Vehicle preference: Mercedes-Benz E-Class
+Flight number: BT123
+Preferred contact: WhatsApp
+Contact: +370 600 00000
+Notes: 2 large suitcases
+Website language: LT
 ```
 
 | Rule | Detail |
 | --- | --- |
+| Subject | `_subject`: `New transfer request — Kaunas → Riga Airport RIX` (places only, each shortened to about 40 characters, control characters removed). Never a phone number, email address or notes. If the plan ignores `_subject`, the form's stable subject is `New lttransfers request`. |
 | Date | Long English format ("14 November 2026"), unambiguous for the reader. |
 | Vehicle | The display name from the slug. "Recommend a vehicle" when that is chosen. |
-| Flight | Printed only if provided *and* the journey was airport-related. |
-| Passengers | Printed as the number, or `8+` for a larger group. The exact group size is in NOTES when the traveller supplied it. |
-| Language | Derived from the page (`en` → English, `lt` → Lithuanian) so the reply is in the right language. |
-| Never included | IP address, user agent, timestamps beyond what email adds, analytics identifiers. |
-| Optional later | For a phone-number contact, a one-tap `wa.me` link in the email. Out of scope for the first build. |
+| Flight | Sent only if provided *and* the journey was airport-related. |
+| Passengers | The number, or `8+`. The exact group size is in Notes when the traveller supplied it. |
+| Language | `EN` or `LT`, derived from the page, so the reply is in the right language. |
+| Never included | IP address, user agent, timestamps, analytics identifiers or any UI state. |
+| No autoresponder | No automatic email to the traveller, and nothing automatic may say or imply the transfer is confirmed. A submission means "request sent", not "booking confirmed". |
 
-### 13.4 Sender, recipient, Reply-To
+### 13.4 Recipient and Reply-To
 
-- **From:** an address on an LT Transfers domain, such as `requests@<lt-transfers domain>`, with SPF, DKIM and DMARC configured. The traveller's address is **never** used as the From address.
-- **To:** the business inbox, held in a server-side environment variable.
-- **Reply-To:** only when the contact method is Email and the address is valid, set to the traveller's address, so replying goes to them. For WhatsApp and Phone no Reply-To is set.
+- **To:** info@lttransfers.lt, set as the destination in the Formspree form.
+- **Reply-To:** `_replyto`, sent only when the contact method is Email and the address is valid, so replying goes to the traveller. For WhatsApp and Phone nothing is invented: the number simply appears in the submission.
 
-### 13.5 Spam and abuse (minimal, no CAPTCHA)
+### 13.5 Spam and abuse
 
 | Measure | Specification |
 | --- | --- |
-| Honeypot | Hidden field `website`: positioned off-screen (not `display: none`), `tabindex="-1"`, `autocomplete="off"`, `aria-hidden="true"` on its wrapper. |
-| Server-side validation | Every rule in section 6 re-checked; unknown vehicle slugs mapped to default; CR/LF stripped from single-line fields. |
-| Length limits | `maxlength` in the browser and the same limits on the server; body capped at 4 KB. |
-| Rate limiting | A small limit per IP address, for example 5 requests per 10 minutes, applied by the host or edge. Counters hold **no form content** and expire quickly. |
-| Not added | CAPTCHA or any third-party challenge. **Cloudflare Turnstile** can be considered later, only if spam becomes a real problem. |
+| Spam filtering | Formspree's built-in spam protection, enabled in the form settings. |
+| Domain restriction | The form is restricted to `lttransfers.lt` in the Formspree dashboard (plus a test origin only while testing). |
+| Validation | The browser re-checks every rule in section 6 before sending. |
+| Not added | CAPTCHA, Turnstile, a honeypot field, or any custom rate limiting. There is no backend to run them on. Add one only if spam becomes a real problem, using what Formspree offers. |
 
 ### 13.6 No database
 
-The website MVP must **not** store submissions in: PostgreSQL, Supabase, Firebase, Airtable, Google Sheets, a local database, a CMS submission collection, a log file, a queue or a cache. The submitted data is sent to the business inbox and then discarded by the server. That is a statement about *the website*. It is **not** a claim that no data is stored anywhere: the email remains in the mailbox, and the provider keeps its own delivery records.
+The website must **not** store submissions in: PostgreSQL, Supabase, Firebase, Airtable, Google Sheets, a local database, a CMS submission collection, a log file, a queue, a cache, localStorage or a cookie. The website keeps no copy. That is a statement about *the website*. It is **not** a claim that no data is stored anywhere: Formspree keeps submissions according to its account configuration, and the email remains in the mailbox. The Privacy Policy says so.
 
 ### 13.7 Failure semantics
 
-If the provider rejects the message or does not answer within the timeout (for example 8 seconds), the server returns a failure and the traveller sees the failure state with the WhatsApp and phone alternatives. There is no fallback storage and no background retry. The request is not lost silently: the traveller is told, and still holds their values.
+If Formspree does not accept the submission, or does not answer within the timeout, the traveller sees the failure state with the WhatsApp and phone alternatives and still holds their values. There is no fallback storage, no mock fallback and no automatic retry. The request is not lost silently: the traveller is told.
 
-### 13.8 Configuration (server-side only)
+### 13.8 Configuration
 
-`RESEND_API_KEY`, `REQUEST_TO_EMAIL`, `REQUEST_FROM_EMAIL`. None is exposed to the browser. If the provider offers a regional sending option and a data-processing agreement, review both before choosing the account's region.
+`PUBLIC_FORMSPREE_ENDPOINT` is the only form-related setting (`.env.example`). It is inlined into the client at build time, so it is set in the build environment and needs a rebuild to change. It carries no secret. There are no server-side secrets.
 
-### 13.9 Hosting prerequisite
+### 13.9 Hosting
 
-The site is currently built with `output: 'static'` in `astro.config.mjs`. `POST /api/request` needs a server runtime: an on-demand Astro route with a host adapter, or a small serverless function next to the static site. The choice depends on hosting and is a technical decision outside this document. The page works without JavaScript only if the endpoint can render a response page; otherwise the no-JS path is "use WhatsApp or phone".
+The site stays `output: 'static'` on Cloudflare hosting. Nothing needs a server runtime. The form works only with JavaScript; without it the "Prefer to talk?" WhatsApp and phone links are the path.
 
 ---
 
@@ -1201,7 +1178,6 @@ The site is currently built with `output: 'static'` in `astro.config.mjs`. `POST
 | Forced colours | Borders, the selected dot and the focus outline are drawn with system colours so they survive high-contrast mode. |
 | Language | `lang` set on `<html>` as already done; the Lithuanian page uses Lithuanian messages. |
 | Autocomplete | `tel` and `email` on the contact input as in 7.2; From / To / Date / notes use `off` (the homepage's own suggestion list takes precedence); nothing asks for profile data. |
-| Honeypot | Hidden from assistive tech (`aria-hidden`, not focusable) so it can never be filled by a person. |
 
 ---
 
@@ -1240,11 +1216,11 @@ Other notes:
 | **Privacy overclaim** | "We don't store your data", "secure", "GDPR compliant" badges | Use only the approved sentence (12.2). The privacy page states the real handling. |
 | **Dead Privacy link** | Link goes nowhere or renders as plain text at launch | Privacy page is a launch prerequisite (12.3); the launch guard should treat `/request` as blocked until it exists. |
 | **Contact details in URLs or analytics** | Phone number in a query string; GA recording the full URL; session replay | `method="post"`; analytics path without query; no replay tools (12.4, 12.6). |
-| **Header injection** | Newlines in "from" or an email address end up in the subject or Reply-To | Strip CR/LF server-side; validate email strictly (13.5). |
-| **Spam floods the inbox** | Dozens of junk requests | Honeypot, limits, rate limiting; Turnstile only if a real problem. |
-| **Silent loss** | Provider down and the visitor sees "Request sent" | Success is shown only after provider acceptance; otherwise the failure state (13.7). |
+| **Header injection** | Newlines in "from" or an email address end up in the subject or Reply-To | Strip CR/LF before submission; validate email strictly (6). |
+| **Spam floods the inbox** | Dozens of junk requests | Formspree's built-in spam filtering (13.5). Anything more is a dashboard setting, not a backend. |
+| **Silent loss** | Provider down and the visitor sees "Request sent" | Success is shown only after Formspree accepts the submission; otherwise the failure state (13.7). |
 | **Duplicate emails** | A double-click or an ambiguous failure plus retry | Client-side button lock; no automatic retry; duplicates are rare and harmless to the business. |
-| **Static site vs server endpoint** | The form is built but the host cannot run `/api/request` | Decide the runtime before building (13.9). |
+| **Endpoint not configured** | A production build ships without `PUBLIC_FORMSPREE_ENDPOINT` and every send fails | The transport fails visibly instead of faking success, and `build:release` refuses to build without the endpoint (13.8). |
 | **Wrong default contact method** | Visitors leave WhatsApp selected but type an email | The input's label and type make the expected value obvious; the error names the method. Confirm the default with the business. |
 | **Flight number mis-detection** | Field appears for city names or never appears for odd airport text | The detection list is explicit and small; missing cases fall back to the notes (7.1). |
 | **Address creep** | The hint or microcopy drifts back towards "address"; a street-address field or map picker appears | Hint stays "City, airport or pickup area"; the second microcopy line says the exact address can be agreed later; free text is still accepted but never solicited (2.5, 12.4). |
@@ -1288,8 +1264,8 @@ Other notes:
 **Decisions that still need confirmation before implementation**
 
 1. **WhatsApp as the preselected contact method.** It speeds the typical visit by one tap, but it only works if the business actually answers on WhatsApp, and it must be confirmed before implementation if the real WhatsApp number is not yet configured (it is a `null` placeholder in `site.ts` today). If not, preselect nothing and keep the field hidden until a method is chosen.
-2. **The mailbox and the privacy page.** Which inbox receives requests, from which sender domain, who can read it and for how long it is kept. The privacy page cannot be written without these, and `/request` should not ship without it.
-3. **Server runtime.** The site is static; sending email needs one server endpoint. This needs a hosting decision.
+2. **The mailbox and the Formspree account.** info@lttransfers.lt receives requests through Formspree. Who can read the mailbox and the Formspree dashboard, and how long each keeps submissions, must be confirmed (`docs/legal-launch-checklist.md`). `/request` should not ship without the Privacy Policy.
+3. **Formspree form endpoint.** Decided: static site plus Formspree, no server runtime (13). Open: creating the form and setting `PUBLIC_FORMSPREE_ENDPOINT` (`docs/formspree-integration.md`).
 4. **The recap on the success screen.** Kept because it lets travellers catch a mistyped contact value, but it is the one part of the success state not in the brief. Say if it should go.
 5. **The single new colour** (`--error`, `#8E2F2F`). Needed so errors never depend on colour alone while still being findable.
 6. **Homepage clean-up** (the "three steps" wording and the closing-strip "LT-____" replacement), to be done at the next revision of the homepage document. Not blocking.

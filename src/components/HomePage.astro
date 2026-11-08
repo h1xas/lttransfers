@@ -16,6 +16,7 @@ import WhereWeGo from './WhereWeGo.astro';
 import Faq from './Faq.astro';
 import ClosingCta from './ClosingCta.astro';
 import MobileActionBar from './MobileActionBar.astro';
+import { site } from '../data/site';
 import type { Lang } from '../data/ui';
 import { getUi } from '../utils/i18n';
 
@@ -25,9 +26,20 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = getUi(lang);
+
+// Minimal, factual Organization data: only confirmed values from data/site.ts (null fields are left out).
+// Deliberately no address, geo, opening hours, ratings, price range or social profiles: none are confirmed.
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: site.name,
+  url: new URL('/', Astro.site).href,
+  ...(site.contact.email && { email: site.contact.email }),
+  ...(site.contact.phone.tel && { telephone: site.contact.phone.tel }),
+};
 ---
 
-<BaseLayout lang={lang} title={t.meta.homeTitle} description={t.meta.homeDescription} headerCta="after-hero">
+<BaseLayout lang={lang} title={t.meta.homeTitle} description={t.meta.homeDescription} headerCta="after-hero" jsonLd={organization}>
   <Hero lang={lang} />
   <RouteBoard lang={lang} />
   <BookingProcess lang={lang} />

@@ -1,10 +1,13 @@
 ---
 import '../styles/global.css';
+import { getImage } from 'astro:assets';
 import Header from '../components/Header.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { assertLaunchReady } from '../data/launch';
 import { languages, langs, type Lang } from '../data/ui';
-import { getUi, localePath, stripLocale } from '../utils/i18n';
+import { getUi } from '../utils/i18n';
+import { absoluteUrl, languageAlternates } from '../utils/seo';
+import shareSource from '../assets/images/hero-airport-transfer.png';
 import sans400 from '../assets/fonts/instrument-sans-latin-400-normal.woff2?url';
 import sans500 from '../assets/fonts/instrument-sans-latin-500-normal.woff2?url';
 
@@ -12,28 +15,42 @@ interface Props {
   lang: Lang;
   title: string;
   description: string;
-  /** Force noindex. Languages that are not `ready` are always noindex. */
+  /**
+   * Utility and error pages (404): `noindex, follow`, and no canonical, hreflang or og:url, because they are
+   * not a language twin of anything. Languages that are not `ready` are always `noindex, nofollow`.
+   */
   noindex?: boolean;
   /** When the "Request a price" header button shows. 'off' on the request page itself. */
   headerCta?: 'after-hero' | 'always' | 'off';
+  /** Structured data for this page (homepage only). Serialised as JSON-LD. */
+  jsonLd?: Record<string, unknown>;
 }
 
 assertLaunchReady();
 
-const { lang, title, description, noindex = false, headerCta = 'always' } = Astro.props;
+const { lang, title, description, noindex = false, headerCta = 'always', jsonLd } = Astro.props;
 const t = getUi(lang);
+const site = Astro.site!;
 
+// One self-referencing canonical per page: absolute, https, trailing slash, no query string or fragment.
 const pathname = Astro.url.pathname;
-const canonical = new URL(pathname, Astro.site).href;
+const canonical = absoluteUrl(pathname, site);
 
-// hreflang only for languages that are published
-const basePath = stripLocale(pathname);
-const alternates = langs
-  .filter((l) => languages[l].ready)
-  .map((l) => ({ lang: languages[l].htmlLang, href: new URL(localePath(l, basePath), Astro.site).href }));
+const published = languages[lang].ready;
+const indexable = published && !noindex;
+const robots = !published ? 'noindex, nofollow' : noindex ? 'noindex, follow' : null;
 
-const robots = noindex || !languages[lang].ready ? 'noindex, nofollow' : 'index, follow';
+// hreflang: every published language, plus x-default → the English twin of this page.
+const alternates = languageAlternates(pathname).map((a) => ({ ...a, href: absoluteUrl(a.path, site) }));
+const xDefault = alternates.find((a) => a.lang === 'en') ?? alternates[0];
+
 const ogLocale = languages[lang].ogLocale;
+
+// Social preview: the approved hero photograph, cropped to the 1200×630 share ratio at build time (jpeg: the
+// format every crawler reads). One image for both languages; alt text follows the page language.
+const share = await getImage({ src: shareSource, width: 1200, height: 630, format: 'jpeg', quality: 80, fit: 'cover', position: 'center' });
+const shareUrl = absoluteUrl(share.src, site);
+const shareAlt = t.hero.imageAlt;
 ---
 
 <!doctype html>
@@ -43,16 +60,16 @@ const ogLocale = languages[lang].ogLocale;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content={robots} />
+    {robots && <meta name="robots" content={robots} />}
     <meta name="theme-color" content="#F1EFEA" />
-    <link rel="canonical" href={canonical} />
+    {indexable && <link rel="canonical" href={canonical} />}
     {
-      alternates.length > 1 && (
+      indexable && (
         <>
           {alternates.map((a) => (
-            <link rel="alternate" hreflang={a.lang} href={a.href} />
+            <link rel="alternate" hreflang={a.htmlLang} href={a.href} />
           ))}
-          <link rel="alternate" hreflang="x-default" href={alternates[0].href} />
+          <link rel="alternate" hreflang="x-default" href={xDefault.href} />
         </>
       )
     }
@@ -61,10 +78,22 @@ const ogLocale = languages[lang].ogLocale;
     <meta property="og:site_name" content={t.siteName} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {indexable && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={ogLocale} />
     {langs.filter((l) => l !== lang && languages[l].ready).map((l) => <meta property="og:locale:alternate" content={languages[l].ogLocale} />)}
-    <!-- TODO: og:image once a final share image exists (1200×630, no text on photo). -->
+    <meta property="og:image" content={shareUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(share.attributes.width)} />
+    <meta property="og:image:height" content={String(share.attributes.height)} />
+    <meta property="og:image:alt" content={shareAlt} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={shareUrl} />
+    <meta name="twitter:image:alt" content={shareAlt} />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />}
 
     <slot name="head" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

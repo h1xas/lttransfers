@@ -56,9 +56,7 @@ const hasFigure = availAfter !== undefined;
 
     <ul role="list" class="talk">
       <li>
-        <ContactLink kind="phone">
-          <Fragment slot="before"><span class="talk-prompt">{t.closing.callPrompt}</span>{' '}</Fragment>
-        </ContactLink>
+        <span><span class="talk-prompt">{t.closing.callPrompt}</span>{' '}<ContactLink kind="phone" /></span>
       </li>
       <li>
         <ContactLink kind="whatsapp" label={t.closing.whatsapp} />

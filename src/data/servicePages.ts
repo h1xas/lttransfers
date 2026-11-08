@@ -13,8 +13,8 @@ import type { Lang } from './ui';
 
 export type ServiceSlug = 'airport-transfers' | 'business-vip-transfers' | 'long-distance' | 'cross-border';
 
-/** A journey the page names. `routeId` comes from data/routes.ts; otherwise both ends are location ids from data/locations.ts. */
-export type JourneyRef = { routeId: string } | { from: string; to: string };
+/** A journey the page names: both ends are location ids from data/locations.ts. */
+export type JourneyRef = { from: string; to: string };
 
 export type Block =
   /** Short paragraphs, two to four sentences each. */
@@ -25,7 +25,7 @@ export type Block =
   | { type: 'list'; items: { text: string; code?: string }[]; note?: { before: string; link: string; after: string } }
   /** Term / description rows. */
   | { type: 'rows'; rows: { term: string; text: string }[] }
-  /** Ruled links into /request/ with the route filled in. Prices appear only for routes marked `final`. */
+  /** Ruled links into /request/ with the route filled in. No prices: those belong to the homepage Popular routes. */
   | { type: 'journeys'; items: JourneyRef[]; note?: string; more?: { label: string; path: string } };
 
 export interface ServiceSection {
@@ -52,7 +52,7 @@ export interface ServicePageContent {
 const en: Record<ServiceSlug, ServicePageContent> = {
   'airport-transfers': {
     slug: 'airport-transfers',
-    metaTitle: 'Airport Transfers in Lithuania | LT Transfers',
+    metaTitle: 'Airport Transfers | LTTransfers',
     metaDescription:
       'Private pre-booked airport transfers to and from Vilnius, Kaunas, Palanga, Riga and Warsaw airports. Send your route and date and we’ll send you a price.',
     h1: 'Airport transfers',
@@ -92,11 +92,16 @@ const en: Record<ServiceSlug, ServicePageContent> = {
       },
       {
         id: 'routes',
-        heading: 'Popular airport routes',
+        heading: 'Example airport journeys',
         blocks: [
           {
             type: 'journeys',
-            items: [{ routeId: 'kaunas-rix' }, { routeId: 'vno-kaunas' }, { routeId: 'kun-vilnius' }, { routeId: 'vilnius-waw' }],
+            items: [
+              { from: 'kaunas', to: 'rix' },
+              { from: 'vno', to: 'kaunas' },
+              { from: 'kun', to: 'vilnius' },
+              { from: 'vilnius', to: 'waw' },
+            ],
             more: { label: 'All popular routes', path: '/#popular-routes' },
           },
         ],
@@ -125,9 +130,9 @@ const en: Record<ServiceSlug, ServicePageContent> = {
 
   'business-vip-transfers': {
     slug: 'business-vip-transfers',
-    metaTitle: 'Business & VIP Transfers | LT Transfers',
+    metaTitle: 'Business & VIP Transfers | LTTransfers',
     metaDescription:
-      'Private pre-booked transfers for guests, staff and partners between airports, hotels, offices, meeting venues and cities. Invoices available, price agreed before booking.',
+      'Private pre-booked transfers for guests, staff and partners between airports, hotels, offices and cities. Invoices available; price agreed before booking.',
     h1: 'Business & VIP transfers',
     lead: 'Private pre-booked transfers for guests, staff, partners and business travellers.',
     support: 'For individual travellers and groups.',
@@ -188,7 +193,7 @@ const en: Record<ServiceSlug, ServicePageContent> = {
 
   'long-distance': {
     slug: 'long-distance',
-    metaTitle: 'Long-Distance Transfers in Lithuania | LT Transfers',
+    metaTitle: 'Long-Distance Transfers in Lithuania | LTTransfers',
     metaDescription:
       'Private pre-booked transfers between cities and other places in Lithuania. Price agreed individually before your booking is confirmed.',
     h1: 'Long-distance transfers',
@@ -248,7 +253,7 @@ const en: Record<ServiceSlug, ServicePageContent> = {
 
   'cross-border': {
     slug: 'cross-border',
-    metaTitle: 'Cross-Border Transfers | LT Transfers',
+    metaTitle: 'Cross-Border Transfers | LTTransfers',
     metaDescription:
       'Private pre-booked transfers between Lithuania, Latvia, Estonia and Poland: city to city, or to an airport or hotel. Price agreed before booking.',
     h1: 'Cross-border transfers',

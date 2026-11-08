@@ -1,37 +1,62 @@
 ---
 /*
-  The cars: "the fleet sheet". Five vehicles on one shared road line.
+  The cars: "the fleet sheet". Five photographs, one controlled set.
 
-  Desktop (≥1200px): one sheet of five equal columns. Each column is a subgrid of
-  four shared rows (drawing, name, descriptor, character line), so every name,
-  descriptor and note sits on one baseline. The road is the bottom edge of the
-  drawing row; the cells touch, so it reads as a single continuous line.
-  Below 1200px: a vertical list, one vehicle per row, each on its own short road.
-  Nothing in between: no 2-up grid, no carousel.
+  Every photograph is prepared to the same frame (same angle, direction, light, scale),
+  so all five share one image treatment: one aspect ratio, `object-fit: cover` and one
+  `object-position`. Nothing is stretched, and nothing is positioned per vehicle.
+  The crop is horizontal only (16:9 source into 16:10), inside the empty margin the
+  frame leaves on both sides of every car, so no wheel, mirror or bumper is cut.
+
+  Desktop (≥1200px): three vehicles across, two centred beneath them, the footnote centred below
+  those. Each vehicle is one cell of a wrapping flex row: all photographs are exactly one width, and
+  cells in a row are as tall as the tallest.
+  768–1199px: a list, one vehicle per row, photograph left, text right.
+  Below 768px: one vehicle per row, photograph above its text (no arrow).
+  No carousel.
 
   Each vehicle is one link into the request flow carrying a *preference*
   (`?vehicle=`). The homepage holds no selected state.
 */
+import { Picture } from 'astro:assets';
 import ArrowIcon from './ArrowIcon.astro';
-import VehicleDrawing from './VehicleDrawing.astro';
 import { fleet, recommendRequest } from '../data/fleet';
 import type { Lang } from '../data/ui';
 import { format, getUi } from '../utils/i18n';
 import { requestVehicleHref } from '../utils/routes';
+import rav4 from '../assets/fleet/toyota-rav4.png';
+import cClass from '../assets/fleet/mercedes-benz-c-class.png';
+import eClass from '../assets/fleet/mercedes-benz-e-class.png';
+import a8 from '../assets/fleet/audi-a8.png';
+import berlingo from '../assets/fleet/citroen-berlingo-multispace.png';
 
 interface Props {
   lang: Lang;
 }
 
+/** Fleet `id` (data/fleet.ts) → its prepared photograph. */
+const photos: Record<string, ImageMetadata> = {
+  rav4,
+  'c-class': cClass,
+  'e-class': eClass,
+  a8,
+  berlingo,
+};
+
 const { lang } = Astro.props;
 const t = getUi(lang);
 const c = t.cars;
-const vehicles = fleet.map((v) => ({
-  ...v,
-  name: `${v.brand} ${v.model}`,
-  href: requestVehicleHref(lang, v.request),
-  ...c.vehicles[v.id],
-}));
+const vehicles = fleet.map((v) => {
+  const name = `${v.brand} ${v.model}`;
+  return {
+    ...v,
+    name,
+    photo: photos[v.id],
+    alt: format(c.imageAlt, { name }),
+    href: requestVehicleHref(lang, v.request),
+    ...c.vehicles[v.id],
+  };
+});
 ---
 
 <section class="cars" id="cars" aria-labelledby="cars-title">
@@ -41,29 +66,41 @@ const vehicles = fleet.map((v) => ({
       <p class="lead">{c.lead}</p>
     </div>
 
-    <ul class="sheet" role="list">
-      {
-        vehicles.map((v) => (
-          <li class="vehicle">
-            <a class="link" href={v.href} aria-label={format(c.chooseLabel, { name: v.name })}>
-              <span class="art">
-                <VehicleDrawing id={v.id} />
-              </span>
-              <span class="name">
-                {v.brand} <span class="model">{v.model}</span>
-              </span>
-              <span class="descriptor">{v.descriptor}</span>
-              <span class="note">{v.note}</span>
-              <ArrowIcon class="go" width={22} />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="sheet">
+      <ul class="list" role="list">
+        {
+          vehicles.map((v) => (
+            <li class="vehicle">
+              <a class="link" href={v.href} aria-label={format(c.chooseLabel, { name: v.name })}>
+                <span class="art">
+                  <Picture
+                    src={v.photo}
+                    alt={v.alt}
+                    formats={['avif', 'webp']}
+                    fallbackFormat="jpeg"
+                    quality={72}
+                    widths={[480, 640, 800, 1000, 1200]}
+                    sizes="(min-width: 1200px) 30vw, (min-width: 768px) 440px, 100vw"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+                <span class="name">
+                  {v.brand} <span class="model">{v.model}</span>
+                </span>
+                <span class="descriptor">{v.descriptor}</span>
+                <span class="note">{v.note}</span>
+                <ArrowIcon class="go" width={22} />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
 
-    <p class="footnote">
-      {c.footnote.before}<a href={requestVehicleHref(lang, recommendRequest)}>{c.footnote.link}</a>{c.footnote.after}
-    </p>
+      <p class="footnote">
+        <span>{c.footnote.before}<a href={requestVehicleHref(lang, recommendRequest)}>{c.footnote.link}</a>{c.footnote.after}</span>
+      </p>
+    </div>
   </div>
 </section>
 
@@ -93,31 +130,31 @@ const vehicles = fleet.map((v) => ({
     line-height: 1.45;
   }
 
-  /* ---------- Sheet (list layout by default) ---------- */
+  /* ---------- Sheet (stacked layout by default) ---------- */
   .sheet {
     grid-column: 1 / -1;
-    list-style: none;
-    padding: 0;
-    container-type: inline-size; /* the shared drawing scale is measured against this width */
-    border-bottom: 2px solid var(--graphite);
-    /* room a drawing may take in its row: ~40% of the list, never wider than 300px */
-    --art-w: min(40cqw, 300px);
-    --fleet-units: 272; /* list rows: the widest drawing (A8) fills --art-w */
+    container-type: inline-size; /* the tablet photograph is measured against this width */
+    --art-w: min(48cqw, 440px);
     --gap: 20px;
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--hairline);
   }
   .vehicle {
     border-top: 1px solid var(--hairline);
   }
 
+  /* Phone: photograph full width above its text. */
   .link {
     position: relative;
     display: grid;
-    grid-template-columns: var(--art-w) minmax(0, 1fr) auto;
-    grid-template-rows: 1fr auto auto auto 1fr;
+    grid-template-columns: minmax(0, 1fr);
     column-gap: var(--gap);
     align-items: start;
-    min-height: 96px;
-    padding-block: 20px;
+    padding-block: 20px 24px;
     color: inherit;
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
@@ -130,29 +167,31 @@ const vehicles = fleet.map((v) => ({
     background: color-mix(in srgb, var(--graphite) 6%, transparent);
   }
 
-  /* The road: this row's own line, as wide as the drawing column. */
+  /* The one image treatment, shared by all five vehicles. */
   .art {
-    grid-column: 1;
-    grid-row: 1 / -1;
-    align-self: center;
-    position: relative;
-    display: flex;
-    align-items: flex-end;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--stone-2);
+    transition: opacity var(--dur-fast) var(--ease);
   }
-  .art::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -0.5px;
-    height: 1px;
-    background: var(--graphite);
-    transition: background-color var(--dur-fast) var(--ease);
+  .art :global(picture),
+  .art :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .art :global(img) {
+    object-fit: cover;
+    object-position: 42% 50%;
   }
 
   .name {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 2;
+    margin-top: 16px;
     font-size: var(--fs-title);
     font-weight: var(--weight-medium);
     line-height: 1.2;
@@ -161,7 +200,7 @@ const vehicles = fleet.map((v) => ({
     display: block;
   }
   .descriptor {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 3;
     margin-top: 8px;
     color: var(--graphite-2);
@@ -171,10 +210,8 @@ const vehicles = fleet.map((v) => ({
     text-transform: uppercase;
     line-height: 1.25;
   }
-  /* Phone: the column beside the drawing is too narrow for a character line without crowding, so it is omitted. */
   .note {
-    display: none;
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 4;
     margin-top: 6px;
     max-width: 22rem;
@@ -183,10 +220,9 @@ const vehicles = fleet.map((v) => ({
     line-height: 1.4;
     text-wrap: pretty;
   }
+  /* The arrow is for the tablet list only: on a phone the whole card is the link and needs no pointer. */
   .link :global(.go) {
-    grid-column: 3;
-    grid-row: 1 / -1;
-    align-self: center;
+    display: none;
     color: var(--pine);
   }
 
@@ -217,7 +253,7 @@ const vehicles = fleet.map((v) => ({
     }
   }
 
-  /* ---------- Tablet list: a wider row, the same shape ---------- */
+  /* ---------- Tablet list: photograph left, text right ---------- */
   @media (min-width: 768px) {
     .intro {
       margin-bottom: var(--space-6);
@@ -229,59 +265,86 @@ const vehicles = fleet.map((v) => ({
       --gap: var(--space-4);
     }
     .link {
-      min-height: 128px;
-      padding-block: 26px;
+      grid-template-columns: var(--art-w) minmax(0, 1fr) auto;
+      grid-template-rows: 1fr auto auto auto 1fr;
+      padding-block: 24px;
+    }
+    .art {
+      grid-column: 1;
+      grid-row: 1 / -1;
+    }
+    .name,
+    .descriptor,
+    .note {
+      grid-column: 2;
+    }
+    .name {
+      margin-top: 0;
     }
     .note {
-      display: block;
       font-size: var(--fs-body);
     }
+    .link :global(.go) {
+      display: block;
+      grid-column: 3;
+      grid-row: 1 / -1;
+      align-self: center;
+    }
   }
-  /* A list row has the width for "Mercedes-Benz E-Class" on one line; the narrow phone row and the sheet column do not. */
-  @media (min-width: 768px) and (max-width: 1199px) {
+  /* A wide row or column has the room for "Mercedes-Benz E-Class" on one line; the phone row does not. */
+  @media (min-width: 768px) {
     .model {
       display: inline;
     }
   }
 
-  /* ---------- Desktop sheet: five columns on one road ---------- */
+  /* ---------- Desktop sheet: three across, two centred beneath, one controlled set ---------- */
   @media (min-width: 1200px) {
     .sheet {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      grid-template-rows: auto auto auto auto;
+      --pad: clamp(20px, 2.2vw, 36px);
+      /* Every photograph is exactly --photo wide. The first column is flush with the heading (one padding
+         less), so its cell is one padding narrower; the cells after it carry a 1px divider. */
+      --photo: calc((100% - 5 * var(--pad) - 2px) / 3);
+    }
+    .list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       border-top: 1px solid var(--hairline);
-      /* inner room of one column: its width less the padding on both sides */
-      --pad: clamp(16px, 1.75vw, 28px);
-      --art-w: calc(100cqw / 5 - 2 * var(--pad));
-      /* Drawn ~10% larger than the column's inner room: a smaller divisor than the widest drawing, and each
-         drawing steps a few px left into its padding (not the first, which is flush with the heading). */
-      --fleet-units: 243;
-      padding-bottom: 0;
+    }
+    /* The full-width hairline between the two rows, and the line break that makes the second row. */
+    .list::before {
+      content: '';
+      order: 1;
+      flex: 0 0 100%;
+      height: 0;
+      border-top: 1px solid var(--hairline);
     }
     .vehicle {
-      grid-row: 1 / span 4;
-      display: grid;
-      grid-template-rows: subgrid;
+      order: 0;
+      flex: 0 0 calc(var(--photo) + 2 * var(--pad));
       border-top: 0;
-      --pl: var(--pad); /* the first column starts flush with the heading */
-      --nudge: 10px;
+      --pl: var(--pad);
     }
     .vehicle:first-child {
-      --pl: 0px;
-      --nudge: 0px;
+      flex-basis: calc(var(--photo) + var(--pad));
+      --pl: 0px; /* flush with the heading */
     }
-    .vehicle + .vehicle {
+    .vehicle:nth-child(n + 4) {
+      order: 2;
+    }
+    .vehicle:is(:nth-child(2), :nth-child(3), :nth-child(5)) {
+      flex-basis: calc(var(--photo) + 2 * var(--pad) + 1px);
       border-left: 1px solid var(--hairline);
     }
 
     .link {
-      grid-row: 1 / -1;
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: subgrid;
+      grid-template-rows: auto;
+      height: 100%;
+      align-content: start;
       align-items: start;
-      min-height: 0;
-      padding: 0 var(--pad) 28px var(--pl);
+      padding: 32px var(--pad) 32px var(--pl);
     }
     .link:focus-visible {
       outline-offset: -3px;
@@ -302,23 +365,11 @@ const vehicles = fleet.map((v) => ({
     }
     .art {
       grid-row: 1;
-      align-self: stretch;
-      padding-top: 48px;
-      /* padding on the link keeps text off the hairlines; the road must reach them */
-      margin-inline: calc(var(--pl) * -1) calc(var(--pad) * -1);
-      padding-inline: var(--pl) var(--pad);
-    }
-    .art :global(.drawing) {
-      margin-left: calc(var(--nudge) * -1);
-    }
-    /* the hairline sits left of every cell but the first: close the 1px gap so the road never breaks */
-    .vehicle + .vehicle .art::after {
-      left: -1px;
     }
     .name {
       grid-row: 2;
-      margin-top: 28px;
-      font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+      margin-top: 24px;
+      font-size: clamp(1.375rem, 1.9vw, 1.75rem);
     }
     .descriptor {
       grid-row: 3;
@@ -326,28 +377,27 @@ const vehicles = fleet.map((v) => ({
     }
     .note {
       grid-row: 4;
-      margin-top: 14px;
+      margin-top: 12px;
+      font-size: var(--fs-body-l);
     }
     .link :global(.go) {
       display: none;
     }
 
-    /* Hover / focus: the active drawing stays full graphite, the others recede; the road under it turns pine. */
-    .link:is(:hover, :focus-visible) .art::after {
-      height: 2px;
-      bottom: -1px;
-      background: var(--pine);
-    }
-    .sheet:has(.link:is(:hover, :focus-visible)) .link:not(:hover, :focus-visible) :global(.drawing) {
-      opacity: 0.42;
+    /* Hover / focus: the active photograph stays full strength, the others recede. */
+    .sheet:has(.link:is(:hover, :focus-visible)) .link:not(:hover, :focus-visible) .art {
+      opacity: 0.55;
     }
     .link:hover,
     .link:active {
       background: none;
     }
 
+    /* Beneath the two centred cars, centred on the page. */
     .footnote {
-      margin-top: var(--space-4);
+      margin: 0;
+      padding-block: var(--space-4) 0;
+      text-align: center;
     }
   }
 </style>

@@ -18,12 +18,11 @@ import ArrowIcon from './ArrowIcon.astro';
 import ContactLink from './ContactLink.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { boardName, getLocation, locationValue } from '../data/locations';
-import { routes } from '../data/routes';
 import { getServicePage, type JourneyRef, type ServiceSlug } from '../data/servicePages';
 import { hasPhone, hasWhatsApp } from '../data/site';
 import type { Lang } from '../data/ui';
 import { getUi, localePath } from '../utils/i18n';
-import { formatPrice, requestHref } from '../utils/routes';
+import { requestHref } from '../utils/routes';
 
 interface Props {
   lang: Lang;
@@ -41,8 +40,6 @@ interface Journey {
   from: Place;
   to: Place;
   href: string;
-  /** Only for a route whose price is final. Development placeholders never reach these pages. */
-  price?: string;
 }
 
 function place(id: string): Place {
@@ -51,16 +48,6 @@ function place(id: string): Place {
 }
 
 function resolveJourney(ref: JourneyRef): Journey {
-  if ('routeId' in ref) {
-    const route = routes.find((r) => r.id === ref.routeId);
-    if (!route) throw new Error(`Unknown route id: ${ref.routeId}`);
-    return {
-      from: place(route.from),
-      to: place(route.to),
-      href: requestHref(lang, locationValue(getLocation(route.from), lang), locationValue(getLocation(route.to), lang)),
-      price: route.status === 'final' && route.price.amount !== null ? formatPrice(route.price, lang) : undefined,
-    };
-  }
   return {
     from: place(ref.from),
     to: place(ref.to),
@@ -162,7 +149,6 @@ const hasContact = hasPhone || hasWhatsApp;
                                     {j.to.code && <span class="code">{j.to.code}</span>}
                                   </span>
                                 </span>
-                                {j.price && <span class="price">{j.price}</span>}
                                 <ArrowIcon class="go" width={24} />
                               </a>
                             </li>
@@ -462,11 +448,6 @@ const hasContact = hasPhone || hasWhatsApp;
   .path .code {
     margin-left: 0.35em;
     font-weight: var(--weight-regular);
-  }
-  .price {
-    flex: none;
-    color: var(--graphite-2);
-    font-size: var(--fs-small);
   }
   .journey :global(.go) {
     flex: none;

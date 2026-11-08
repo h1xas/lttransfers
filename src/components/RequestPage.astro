@@ -3,7 +3,7 @@
   /request — one calm enquiry page. The homepage ticket strip, unrolled (Request Flow Wireframe).
 
   UI + client-side behaviour only. Submitting goes through lib/request (normalise, validate, sendRequest);
-  delivery is a local mock until the real endpoint exists (docs/request-email-integration.md). Nothing typed here is stored, except From / To / Date in the shared `lt-starter`
+  delivery is Formspree, through lib/request/send.ts (docs/formspree-integration.md). Nothing typed here is stored, except From / To / Date in the shared `lt-starter`
   sessionStorage key (so the homepage strips and this page agree).
 
   Layout: masthead (rail c1–c4 on desktop) | form (c5–c12). DOM order is the mobile order:
@@ -16,7 +16,6 @@ import LocationField from './LocationField.astro';
 import SwapButton from './SwapButton.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { fleet, recommendRequest } from '../data/fleet';
-import { isBuilt } from '../data/launch';
 import { hasPhone, hasWhatsApp, site } from '../data/site';
 import type { Lang } from '../data/ui';
 import { languages } from '../data/ui';
@@ -41,8 +40,7 @@ const vehicles = [
 const whatsappUrl = site.contact.whatsapp.url;
 const phoneTel = site.contact.phone.tel;
 const hasTalk = hasPhone || hasWhatsApp;
-const privacyPath = '/privacy/';
-const privacyBuilt = isBuilt(privacyPath);
+const privacyHref = localePath(lang, '/privacy/');
 
 const payload = locationPayload(s.countries, lang);
 
@@ -72,7 +70,7 @@ const config = {
 };
 ---
 
-<BaseLayout lang={lang} title={t.meta.requestTitle} description={r.metaDescription} noindex headerCta="off">
+<BaseLayout lang={lang} title={t.meta.requestTitle} description={r.metaDescription} headerCta="off">
   <!-- The query string carries journey values; it never leaves the site (Request Flow Wireframe 12.4). -->
   <meta slot="head" name="referrer" content="same-origin" />
 
@@ -333,15 +331,7 @@ const config = {
           </button>
 
           <p class="privacy">
-            {r.privacy}
-            {
-              privacyBuilt && (
-                <a href={localePath(lang, privacyPath)}>
-                  {r.privacyLink}
-                  <ArrowIcon class="link-arrow" width={14} />
-                </a>
-              )
-            }
+            {r.privacy.before}<a href={privacyHref}>{r.privacy.link}</a>{r.privacy.after}
           </p>
         </div>
 

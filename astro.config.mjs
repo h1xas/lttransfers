@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
-// TODO: replace with the production domain once it is confirmed.
-// `.example` is a reserved TLD, so this can never collide with a real site.
-const site = 'https://lttransfers.example';
+// Production domain. Used for canonical, hreflang, og:url and the sitemap. One value, set once.
+const site = 'https://lttransfers.lt';
 
 export default defineConfig({
   site,
@@ -16,4 +16,12 @@ export default defineConfig({
     locales: ['en', 'lt'],
     routing: { prefixDefaultLocale: false },
   },
+  integrations: [
+    sitemap({
+      // Indexable pages only: the 404 screens are noindex.
+      filter: (page) => !/\/404\/?$/.test(page),
+      // Adds reciprocal en / lt alternates to each sitemap entry (the HTML <link rel="alternate"> tags stay primary).
+      i18n: { defaultLocale: 'en', locales: { en: 'en', lt: 'lt' } },
+    }),
+  ],
 });

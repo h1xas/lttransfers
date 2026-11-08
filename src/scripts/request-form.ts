@@ -1,6 +1,6 @@
 /*
   Client behaviour of /request: location suggestions, swap, the airport-only Flight number, passengers,
-  contact method, validation and the (mock) send. Prefilling is done earlier by the inline script in
+  contact method, validation and the send (lib/request/send.ts). Prefilling is done earlier by the inline script in
   RequestPage.astro, so this file only reads the fields as they already are.
 
   Nothing typed here is stored. Only From / To / Date are written back to the shared `lt-starter`
@@ -230,7 +230,7 @@ function init(form: HTMLFormElement, cfg: Config) {
   });
 
   // ---------- Fields and validation ----------
-  // The rules are lib/request/validation.ts (shared with the future server). Here: which message a code gets, and
+  // The rules are lib/request/validation.ts . Here: which message a code gets, and
   // the page's rhythm: nothing while typing, format errors on blur, everything on Send request.
   const dateWindow = () => ({ min: dateInput.min || localDate(), max: dateInput.max || localDate(2) });
 
@@ -375,7 +375,7 @@ function init(form: HTMLFormElement, cfg: Config) {
     lang: cfg.lang,
   });
 
-  /** Shows field errors from a validation result (the page's own, or a server's) and focuses the first one. */
+  /** Shows field errors from a validation result and focuses the first one. */
   function showFieldErrors(errors: FieldErrors): boolean {
     const shown = fieldDefs.filter((field) => {
       const code = errors[field.key];
@@ -419,7 +419,7 @@ function init(form: HTMLFormElement, cfg: Config) {
       return;
     }
 
-    // Same code path a server will run: normalise, validate, then hand the canonical request to the transport.
+    // Normalise and validate, then hand the canonical request to the transport (sendRequest → Formspree).
     const validated = validateRequest(rawRequest(), dateWindow());
     if (!validated.ok) {
       if (!showFieldErrors(validated.errors)) showFailure();
@@ -430,8 +430,7 @@ function init(form: HTMLFormElement, cfg: Config) {
     const result = await sendRequest(validated.request);
     setSending(false);
     if (result.status === 'success') showSuccess(validated.request);
-    else if (result.status === 'validation_error' && showFieldErrors(result.errors)) return; // values kept, no failure panel
-    else showFailure();
+    else showFailure(); // values stay in the form; "Try again" resubmits
   });
   submit.addEventListener('click', (e) => {
     if (sending) e.preventDefault();

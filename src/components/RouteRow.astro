@@ -16,14 +16,10 @@ interface Props {
   t: Ui['routes'];
   from?: Place;
   to?: Place;
-  duration?: string;
   price?: string;
-  isDev?: boolean;
-  /** The closing "Any other route" row. */
-  other?: boolean;
 }
 
-const { href, t, from, to, duration, price, isDev = false, other = false } = Astro.props;
+const { href, t, from, to, price } = Astro.props;
 
 // Keep the last word and the IATA code together so a code never wraps onto a line by itself.
 function split(name: string = '') {
@@ -35,53 +31,31 @@ const a = split(from?.name);
 const b = split(to?.name);
 ---
 
-{
-  other ? (
-    <a class="route-row board-row is-other" href={href}>
-      <span class="other-label">{t.other.label}</span>
-      <span class="other-places col-other-places">{t.other.places}</span>
-      <span class="other-cta col-other-cta">
-        <span>{t.other.cta}</span>
-        <ArrowIcon class="other-arrow" width={22} />
+<a class="route-row board-row" href={href}>
+  <span class="path">
+    <span class="from-cell col-from">
+      <span class="place">
+        {a.head}{a.head ? ' ' : ''}<span class="nowrap">{a.last}{from?.code && ' '}{from?.code && <span class="code">{from.code}</span>}</span>
       </span>
-    </a>
-  ) : (
-    <a class:list={['route-row', 'board-row', { 'is-dev': isDev }]} href={href}>
-      <span class="path">
-        <span class="from-cell col-from">
-          <span class="place">
-            {a.head}{a.head ? ' ' : ''}<span class="nowrap">{a.last}{from?.code && ' '}{from?.code && <span class="code">{from.code}</span>}</span>
-          </span>
-          <span class="leader" aria-hidden="true"></span>
-          <span class="arrow" aria-hidden="true">
-            <ArrowIcon width={28} />
-          </span>
-        </span>
-        <span class="sr-only"> {t.to} </span>
-        <span class="to-cell col-to">
-          <span class="place">
-            {b.head}{b.head ? ' ' : ''}<span class="nowrap">{b.last}{to?.code && ' '}{to?.code && <span class="code">{to.code}</span>}</span>
-          </span>
-        </span>
+      <span class="leader" aria-hidden="true"></span>
+      <span class="arrow" aria-hidden="true">
+        <ArrowIcon width={28} />
       </span>
-      <span class="meta">
-        <span class="time col-time">{duration}</span>
-        <span class="price col-price">
-          {isDev && (
-            <span class="dev" aria-hidden="true">
-              {t.devMarker}
-            </span>
-          )}
-          {isDev && <span class="sr-only">{t.devNote} </span>}
-          <span class="from-word">{t.from}</span> <span class="amount">{price}</span>
-        </span>
-        <span class="go col-go" aria-hidden="true">
-          <ArrowIcon class="go-arrow" width={20} />
-        </span>
+    </span>
+    <span class="sr-only"> {t.to} </span>
+    <span class="to-cell col-to">
+      <span class="place">
+        {b.head}{b.head ? ' ' : ''}<span class="nowrap">{b.last}{to?.code && ' '}{to?.code && <span class="code">{to.code}</span>}</span>
       </span>
-    </a>
-  )
-}
+    </span>
+  </span>
+  <span class="meta">
+    <span class="price col-price"><span class="from-word">{t.from}</span> <span class="amount">{price}</span></span>
+    <span class="go col-go" aria-hidden="true">
+      <ArrowIcon class="go-arrow" width={20} />
+    </span>
+  </span>
+</a>
 
 <style>
   .route-row {
@@ -148,14 +122,6 @@ const b = split(to?.name);
     margin-top: 6px;
     font-size: 1rem;
   }
-  .time {
-    color: var(--graphite-2);
-  }
-  .price::before {
-    content: '·';
-    margin-inline: 8px;
-    color: var(--graphite-2);
-  }
   .from-word {
     color: var(--graphite-2);
     font-size: 0.9375rem;
@@ -164,49 +130,10 @@ const b = split(to?.name);
     font-size: 1.0625rem;
     font-weight: var(--weight-medium);
   }
-  /* Development placeholders read as provisional: quiet marker, muted figure */
-  .dev {
-    margin-right: 8px;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    color: color-mix(in srgb, var(--graphite-2) 72%, transparent);
-    vertical-align: 1px;
-  }
-  .is-dev .amount {
-    color: var(--graphite-2);
-  }
   .go {
     margin-left: auto;
     align-self: center;
     color: var(--graphite-2);
-  }
-
-  /* "Any other route" */
-  .other-label {
-    display: block;
-    color: var(--graphite-2);
-    font-size: var(--fs-route);
-    font-weight: var(--weight-medium);
-    letter-spacing: var(--track-upper);
-    text-transform: uppercase;
-  }
-  .other-places {
-    display: block;
-    margin-top: 4px;
-    color: var(--graphite-2);
-    font-size: 0.9375rem;
-  }
-  .other-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 8px;
-    font-size: 1rem;
-    font-weight: var(--weight-medium);
-  }
-  .other-cta :global(.other-arrow) {
-    color: var(--pine);
   }
 
   /* ---------- Tablet: same two-line rows, a little more air ---------- */
@@ -293,12 +220,6 @@ const b = split(to?.name);
       font-size: var(--fs-route-board);
       letter-spacing: 0.035em;
     }
-    .time {
-      font-size: 1.0625rem;
-    }
-    .price::before {
-      display: none;
-    }
     .price {
       white-space: nowrap;
     }
@@ -318,23 +239,5 @@ const b = split(to?.name);
       opacity: 1;
     }
 
-    .other-label {
-      grid-column: 1 / 5;
-      grid-row: 1;
-    }
-    .other-places {
-      margin-top: 0;
-      font-size: 1.0625rem;
-    }
-    .other-cta {
-      margin-top: 0;
-      font-size: 1.0625rem;
-    }
-    .other-cta :global(.other-arrow) {
-      transition: transform var(--dur-fast) var(--ease);
-    }
-    .route-row:hover .other-cta :global(.other-arrow) {
-      transform: translateX(4px);
-    }
   }
 </style>

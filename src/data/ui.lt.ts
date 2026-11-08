@@ -10,13 +10,13 @@
 import type { Ui } from './ui';
 
 export const lt: Ui = {
-  siteName: 'LT Transfers',
+  siteName: 'LTTransfers',
 
   meta: {
-    homeTitle: 'LT Transfers — privatūs pervežimai Lietuvoje, Latvijoje, Estijoje ir Lenkijoje',
+    homeTitle: 'Privatūs pervežimai Lietuvoje ir užsienyje | LTTransfers',
     homeDescription:
-      'Privatūs pervežimai iš ir į oro uostus, verslo ir tarpmiestiniai pervežimai Lietuvoje, Latvijoje, Estijoje ir Lenkijoje. Kainą suderiname prieš patvirtindami užsakymą. Veikiame 24/7, užsakius iš anksto.',
-    requestTitle: 'Pervežimo užklausa — LT Transfers',
+      'Privatūs iš anksto užsakomi pervežimai į oro uostus, verslo, tarpmiestinėms ir tarptautinėms kelionėms Lietuvoje, Latvijoje, Estijoje ir Lenkijoje.',
+    requestTitle: 'Pervežimo užklausa | LTTransfers',
   },
 
   a11y: {
@@ -85,20 +85,9 @@ export const lt: Ui = {
 
   routes: {
     title: 'Populiarūs maršrutai',
-    columns: { from: 'Iš', to: 'Į', byRoad: 'Kelyje', price: 'Nuo, už kelionę' },
+    columns: { from: 'Iš', to: 'Į', price: 'Nuo, už kelionę' },
     from: 'nuo',
     to: '–', // screen-reader separator between two place names: "Kaunas – Ryga" (a bare "į" would need the next name in the accusative)
-    approx: '~',
-    hours: 'val.',
-    minutes: 'min',
-    devMarker: 'DEV',
-    devNote: 'Kūrimo etapo kaina. Niekada nepublikuojama.',
-    devLegend: 'DEV žymi kūrimo etapo kainą. Leidimo versija jos neišleis.',
-    other: {
-      label: 'Kitas maršrutas',
-      places: 'Lietuva, Latvija, Estija ir Lenkija',
-      cta: 'Gauti pasiūlymą',
-    },
     clarification:
       'Nurodytos kainos yra orientacinės. Tiksli kaina derinama individualiai pagal maršrutą, automobilį ir kelionės informaciją.',
     oneWay: 'Kaina už kelionę į vieną pusę. Kiekvienas maršrutas galimas abiem kryptimis.',
@@ -155,7 +144,7 @@ export const lt: Ui = {
       },
     },
     link: 'Kainos ir apmokėjimas',
-    linkPath: '/pricing-and-payment/',
+    linkPath: '/terms/#pricing-and-payment',
   },
 
   included: {
@@ -186,12 +175,13 @@ export const lt: Ui = {
     title: 'Automobiliai',
     lead: 'Jei turite pageidavimą, pasirinkite automobilį. Prieinamumą patvirtinsime pateikdami kainos pasiūlymą.',
     chooseLabel: 'Pasirinkti {name} kaip pageidaujamą automobilį',
+    imageAlt: '{name} – LTTransfers privatiems pervežimams',
     vehicles: {
       rav4: { descriptor: 'SUV', note: 'Praktiškas, su vietos bagažui.' },
       'c-class': { descriptor: 'Sedanas', note: 'Patogus sedanas.' },
       'e-class': { descriptor: 'Verslo klasės sedanas', note: 'Rafinuotas sedanas ilgesnėms kelionėms.' },
       a8: { descriptor: 'Verslo klasės sedanas', note: 'Erdvus sedanas ilgesnėms kelionėms.' },
-      'v-class': { descriptor: 'MPV / grupėms', note: 'Vietos grupei ir bagažui.' },
+      berlingo: { descriptor: 'MPV', note: 'Praktiškas ir erdvus pasirinkimas.' },
     },
     footnote: {
       before: 'Nežinote, kurį pasirinkti? Užklausoje pažymėkite „',
@@ -222,7 +212,7 @@ export const lt: Ui = {
       permit: 'Leidimas vežti keleivius',
       insurance: 'Draudimas',
     },
-    contactLabel: 'Susisiekite su LT Transfers',
+    contactLabel: 'Susisiekite su LTTransfers',
     whatsappValue: 'Rašykite per WhatsApp',
     email: 'El. paštas',
   },
@@ -266,7 +256,7 @@ export const lt: Ui = {
   faq: {
     title: 'Dažniausi klausimai',
     support: 'Neradote atsakymo? Paklauskite tiesiogiai.',
-    contactLabel: 'Susisiekite su LT Transfers',
+    contactLabel: 'Susisiekite su LTTransfers',
     items: [
       {
         key: 'vehicle',
@@ -319,12 +309,6 @@ export const lt: Ui = {
         answer:
           'Taip. Pervežimą galite suorganizuoti kitam keleiviui. Atsiųskite jo kelionės informaciją ir telefono numerį, kuriuo prireikus galėtume susisiekti.',
       },
-      {
-        key: 'pets',
-        status: 'confirmed',
-        question: 'Ar galiu keliauti su augintiniu?',
-        answer: 'Ne. LT Transfers šiuo metu gyvūnų nevežioja.',
-      },
     ],
   },
 
@@ -358,7 +342,7 @@ export const lt: Ui = {
     legalLabel: 'Teisinė informacija',
     legal: [
       { key: 'privacy', label: 'Privatumas', path: '/privacy/' },
-      { key: 'terms', label: 'Sąlygos', path: '/terms/' },
+      { key: 'terms', label: 'Paslaugų teikimo sąlygos', path: '/terms/' },
     ],
     disclosure: 'Svetainės nuotraukos yra iliustracinės. Faktinis automobilis nurodomas užsakymo patvirtinime.',
   },
@@ -367,7 +351,8 @@ export const lt: Ui = {
     heading: 'Pervežimo užklausa',
     lead: 'Atsiųskite kelionės informaciją. Patikrinsime galimybes ir pateiksime kainos pasiūlymą.',
     noAccount: 'Registracija nereikalinga.',
-    metaDescription: 'Atsiųskite kelionės informaciją. Patikrinsime galimybes ir pateiksime kainos pasiūlymą.',
+    metaDescription:
+      'Paprašykite privataus pervežimo kainos Lietuvoje, Latvijoje, Estijoje ar Lenkijoje. Atsiųskite kelionės informaciją – patikrinsime galimybes ir pateiksime kainą.',
     optional: 'Neprivaloma',
     groups: {
       journey: 'Jūsų kelionė',
@@ -437,8 +422,11 @@ export const lt: Ui = {
     submit: 'Siųsti užklausą',
     sending: 'Siunčiama…',
     retry: 'Bandyti dar kartą',
-    privacy: 'Šiuos duomenis naudojame tik tam, kad atsakytume į jūsų pervežimo užklausą. Kliento paskyra nekuriama.',
-    privacyLink: 'Privatumas',
+    privacy: {
+      before: 'Šiuos duomenis naudojame jūsų pervežimo užklausai administruoti. Daugiau – ',
+      link: 'Privatumo politikoje',
+      after: '.',
+    },
     failure: {
       heading: 'Nepavyko išsiųsti užklausos.',
       text: 'Bandykite dar kartą arba susisiekite su mumis telefonu ar per WhatsApp.',
@@ -447,7 +435,7 @@ export const lt: Ui = {
     },
     success: {
       title: 'Užklausa išsiųsta',
-      documentTitle: 'Užklausa išsiųsta — LT Transfers',
+      documentTitle: 'Užklausa išsiųsta — LTTransfers',
       text: 'Gavome jūsų kelionės informaciją. Susisieksime pasirinktu būdu ir aptarsime automobilio prieinamumą bei kainą.',
       home: 'Grįžti į pradžią',
       whatsapp: 'Rašykite per WhatsApp',
@@ -464,5 +452,13 @@ export const lt: Ui = {
       honesty:
         'Tai yra jūsų užklausa, o ne patvirtintas užsakymas. Užsakymas patvirtinamas suderinus kainą ir kelionės informaciją.',
     },
+  },
+
+  notFound: {
+    title: 'Puslapis nerastas | LTTransfers',
+    heading: 'Puslapis nerastas',
+    text: 'Ieškomas puslapis galėjo būti perkeltas arba jo nebėra.',
+    home: 'Į pagrindinį',
+    request: 'Pateikti užklausą',
   },
 };

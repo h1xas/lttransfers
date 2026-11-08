@@ -1,9 +1,12 @@
 ---
+import { Image } from 'astro:assets';
+import logo from '../assets/images/logo.png';
 import ArrowIcon from './ArrowIcon.astro';
 import ContactLink from './ContactLink.astro';
-import { site } from '../data/site';
-import { languages, langs, type Lang } from '../data/ui';
-import { getUi, localePath, stripLocale } from '../utils/i18n';
+import { hasEmail, site } from '../data/site';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+import { languageAlternates } from '../utils/seo';
 
 interface Props {
   lang: Lang;
@@ -30,20 +33,23 @@ const items = t.nav.items.map((item) => {
 // The desktop bar carries the four services only; Cars and How it works live in the mobile menu and footer.
 const primaryItems = items.filter((item) => ['airport', 'business', 'long', 'cross'].includes(item.key));
 
-const switchTo = langs.map((l) => ({
-  lang: l,
-  short: languages[l].short,
-  label: languages[l].label,
-  htmlLang: languages[l].htmlLang,
-  href: localePath(l, stripLocale(pathname)),
-  current: l === lang,
+// Same source as the <head> hreflang links (utils/seo.ts).
+const switchTo = languageAlternates(pathname).map((a) => ({
+  lang: a.lang,
+  short: a.short,
+  label: a.label,
+  htmlLang: a.htmlLang,
+  href: a.path,
+  current: a.lang === lang,
 }));
 const current = switchTo.find((l) => l.current)!;
 ---
 
 <header class="site-header" data-header data-cta-mode={cta}>
   <div class="bar page-grid">
-    <a class="wordmark" href={home}>{t.siteName}</a>
+    <a class="wordmark" href={home}>
+      <Image src={logo} alt={t.siteName} height={56} loading="eager" />
+    </a>
 
     <nav class="primary-nav" aria-label={t.a11y.primaryNav}>
       <ul role="list">
@@ -148,6 +154,7 @@ const current = switchTo.find((l) => l.current)!;
       <ul role="list" class="menu-contact">
         <li><ContactLink kind="phone" /></li>
         <li><ContactLink kind="whatsapp" /></li>
+        {hasEmail && <li><ContactLink kind="email" /></li>}
       </ul>
       <p class="menu-operator">{site.operator}</p>
     </div>
@@ -187,11 +194,17 @@ const current = switchTo.find((l) => l.current)!;
     display: inline-flex;
     align-items: center;
     min-height: var(--tap);
-    font-weight: var(--weight-medium);
-    font-size: 1.1875rem;
-    letter-spacing: -0.01em;
     text-decoration: none;
-    white-space: nowrap;
+  }
+  .wordmark :global(img) {
+    display: block;
+    width: auto;
+    height: 24px;
+  }
+  @media (min-width: 768px) {
+    .wordmark :global(img) {
+      height: 28px;
+    }
   }
 
   /* ---------- Primary navigation (desktop) ---------- */

@@ -1,13 +1,13 @@
 ---
 /*
-  Phone / WhatsApp. Until real details exist in data/site.ts this renders plain
-  placeholder text and no link, so nothing points at an invented number.
+  Phone / WhatsApp / email links, from data/site.ts. If a value is ever unset this renders plain text
+  and no link, so nothing points at an invented contact.
 */
 import { site } from '../data/site';
 
 interface Props {
-  kind: 'phone' | 'whatsapp';
-  /** Visible text. Phone defaults to the number (or its placeholder). */
+  kind: 'phone' | 'whatsapp' | 'email';
+  /** Visible text. Phone and email default to the number / address. */
   label?: string;
   /** Optional compact text; the parent decides when to swap via .contact-full / .contact-short. */
   shortLabel?: string;
@@ -21,9 +21,13 @@ const href =
     ? site.contact.phone.tel
       ? `tel:${site.contact.phone.tel}`
       : null
-    : site.contact.whatsapp.url;
+    : kind === 'email'
+      ? site.contact.email
+        ? `mailto:${site.contact.email}`
+        : null
+      : site.contact.whatsapp.url;
 
-const text = label ?? (kind === 'phone' ? site.contact.phone.display : 'WhatsApp');
+const text = label ?? (kind === 'phone' ? site.contact.phone.display : kind === 'email' ? (site.contact.email ?? '') : 'WhatsApp');
 const Tag = href ? 'a' : 'span';
 ---
 
