@@ -160,7 +160,7 @@ const en: Record<ServiceSlug, ServicePageContent> = {
             type: 'rows',
             rows: [
               { term: 'Invoices', text: 'Available.' },
-              { term: 'Payment', text: 'Cash · card · bank transfer.' },
+              { term: 'Payment', text: 'Cash, card, bank transfer.' },
               {
                 term: 'Vehicle preference',
                 text: 'Tell us which vehicle you prefer. We’ll confirm availability when we send your price.',

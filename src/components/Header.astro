@@ -77,7 +77,7 @@ const current = switchTo.find((l) => l.current)!;
         {
           switchTo.map((l, i) => (
             <>
-              {i > 0 && <span class="lang-sep" aria-hidden="true">·</span>}
+              {i > 0 && <span class="lang-sep" aria-hidden="true"></span>}
               <a
                 href={l.href}
                 hreflang={l.htmlLang}
@@ -297,7 +297,8 @@ const current = switchTo.find((l) => l.current)!;
     color: var(--graphite);
   }
   .lang-sep {
-    color: var(--graphite-2);
+    display: inline-block;
+    width: 6px;
   }
 
   /* ---------- Language dropdown (below 1200px) ---------- */

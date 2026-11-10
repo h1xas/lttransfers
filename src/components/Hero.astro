@@ -37,7 +37,7 @@ const hasFigure = availAfter !== undefined;
         <p class="talk">
           <span class="talk-prompt">{t.contact.talkPrompt}</span>
           <ContactLink kind="phone" label={t.contact.phone} />
-          <span class="talk-sep" aria-hidden="true">·</span>
+          <span class="talk-sep" aria-hidden="true"></span>
           <ContactLink kind="whatsapp" />
         </p>
       </div>
@@ -64,7 +64,7 @@ const hasFigure = availAfter !== undefined;
     <div class="strip-inner">
       <RouteStarter id="hero" lang={lang} hero />
       <p class="promise">
-        {t.starter.promiseAgreed}{' · '}{
+        {t.starter.promiseAgreed}{'. '}{
           hasFigure ? (
             <>
               {availBefore}
@@ -127,7 +127,8 @@ const hasFigure = availAfter !== undefined;
     font-weight: var(--weight-regular);
   }
   .talk-sep {
-    color: var(--graphite-2);
+    display: inline-block;
+    width: 14px;
   }
   .talk :global(.is-placeholder) {
     color: var(--graphite);

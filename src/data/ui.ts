@@ -219,7 +219,7 @@ const en = {
         places: ['Lithuania', 'Latvia', 'Estonia', 'Poland'],
       },
     },
-    payment: { label: 'Payment options', value: 'Cash · card · bank transfer' },
+    payment: { label: 'Payment options', value: 'Cash, card, bank transfer' },
     invoices: { label: 'Invoices', value: 'Available' },
     register: {
       operator: 'Operator',

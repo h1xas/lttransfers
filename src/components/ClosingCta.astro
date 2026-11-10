@@ -41,7 +41,7 @@ const hasFigure = availAfter !== undefined;
     </div>
 
     <p class="promise">
-      {t.starter.promiseAgreed}{' · '}{
+      {t.starter.promiseAgreed}{'. '}{
         hasFigure ? (
           <>
             {availBefore}
@@ -187,7 +187,7 @@ const hasFigure = availAfter !== undefined;
       border-top: 0;
     }
     .talk li + li::before {
-      content: '·';
+      content: '';
       margin-left: 10px;
       color: var(--ash);
     }

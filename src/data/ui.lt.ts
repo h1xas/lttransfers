@@ -103,7 +103,7 @@ export const lt: Ui = {
       },
       price: {
         title: 'Automobilis ir kaina',
-        text: 'Peržiūrime jūsų kelionę, patvirtiname galimą automobilį ir pateikiame kainos pasiūlymą.',
+        text: 'Peržiūrime Jūsų kelionę, patvirtiname galimą automobilį ir pateikiame kainos pasiūlymą.',
       },
       confirmed: {
         title: 'Užsakymas patvirtintas',
@@ -111,7 +111,7 @@ export const lt: Ui = {
       },
       travel: {
         title: 'Kelionė',
-        text: 'Patvirtintas automobilis atvyksta sutartu laiku ir nuveža jus nuo durų iki durų.',
+        text: 'Patvirtintas automobilis atvyksta sutartu laiku ir nuveža Jus nuo durų iki durų.',
       },
     },
     doc: {
@@ -133,7 +133,7 @@ export const lt: Ui = {
       placeholderPlate: 'Jei žinoma',
       placeholderBlank: 'Bus užpildyta',
       paymentValue: 'Grynieji / kortelė / pavedimas',
-      caption: 'Patvirtinimo pavyzdys. Jūsų patvirtinime bus nurodytas jūsų automobilis ir kelionės informacija.',
+      caption: 'Patvirtinimo pavyzdys. Jūsų patvirtinime bus nurodytas Jūsų automobilis ir kelionės informacija.',
       example: {
         from: 'Kaunas',
         to: 'Rygos oro uostas',
@@ -152,13 +152,13 @@ export const lt: Ui = {
     lead: 'Tai, kas ilgą kelionę daro nuspėjamą.',
     imageAlt: 'Verslo keliautojas eina link verslo klasės automobilio prie modernaus biuro pastato',
     items: [
-      { key: 'price', status: 'confirmed', label: 'Suderinta kaina', text: 'Kainą suderiname su jumis prieš patvirtindami užsakymą.' },
+      { key: 'price', status: 'confirmed', label: 'Suderinta kaina', text: 'Kainą suderiname su Jumis prieš patvirtindami užsakymą.' },
       { key: 'door', status: 'confirmed', label: 'Nuo durų iki durų', text: 'Paėmimas ir išlaipinimas sutartu adresu ar terminale.' },
       {
         key: 'vehicle',
         status: 'confirmed',
         label: 'Pageidaujamas automobilis',
-        text: 'Pasakykite, kuris automobilis jums labiausiai tinka. Prieinamumą patvirtinsime pateikdami kainos pasiūlymą.',
+        text: 'Pasakykite, kuris automobilis Jums labiausiai tinka. Prieinamumą patvirtinsime pateikdami kainos pasiūlymą.',
       },
       { key: 'payment', status: 'confirmed', label: 'Apmokėjimas', text: 'Grynaisiais, kortele ar pavedimu.' },
       { key: 'invoice', status: 'confirmed', label: 'Sąskaita', text: 'Išrašome sąskaitas.' },
@@ -202,7 +202,7 @@ export const lt: Ui = {
         places: ['Lietuva', 'Latvija', 'Estija', 'Lenkija'],
       },
     },
-    payment: { label: 'Apmokėjimo būdai', value: 'Grynieji · kortelė · pavedimas' },
+    payment: { label: 'Apmokėjimo būdai', value: 'Grynieji, kortelė, pavedimas' },
     invoices: { label: 'Sąskaitos', value: 'Išrašomos' },
     register: {
       operator: 'Paslaugų teikėjas',
@@ -275,7 +275,7 @@ export const lt: Ui = {
         key: 'flight',
         status: 'confirmed',
         question: 'Kada atvyksite manęs paimti prieš skrydį?',
-        answer: 'Atsiųskite skrydžio informaciją, o paėmimo laiką suderinsime pagal jūsų kelionę.',
+        answer: 'Atsiųskite skrydžio informaciją, o paėmimo laiką suderinsime pagal Jūsų kelionę.',
       },
       {
         key: 'payment',
@@ -357,7 +357,7 @@ export const lt: Ui = {
     groups: {
       journey: 'Jūsų kelionė',
       vehicle: 'Automobilis',
-      contact: 'Kaip su jumis susisiekti?',
+      contact: 'Kaip su Jumis susisiekti?',
     },
     journeyNote: 'Tikslų paėmimo laiką ir adresą galėsime suderinti vėliau.',
     passengers: {
@@ -423,7 +423,7 @@ export const lt: Ui = {
     sending: 'Siunčiama…',
     retry: 'Bandyti dar kartą',
     privacy: {
-      before: 'Šiuos duomenis naudojame jūsų pervežimo užklausai administruoti. Daugiau – ',
+      before: 'Šiuos duomenis naudojame Jūsų pervežimo užklausai administruoti. Daugiau – ',
       link: 'Privatumo politikoje',
       after: '.',
     },
@@ -436,7 +436,7 @@ export const lt: Ui = {
     success: {
       title: 'Užklausa išsiųsta',
       documentTitle: 'Užklausa išsiųsta — LTTransfers',
-      text: 'Gavome jūsų kelionės informaciją. Susisieksime pasirinktu būdu ir aptarsime automobilio prieinamumą bei kainą.',
+      text: 'Gavome Jūsų kelionės informaciją. Susisieksime pasirinktu būdu ir aptarsime automobilio prieinamumą bei kainą.',
       home: 'Grįžti į pradžią',
       whatsapp: 'Rašykite per WhatsApp',
       recap: 'Jūsų užklausa',
@@ -450,7 +450,7 @@ export const lt: Ui = {
         notes: 'Pastabos',
       },
       honesty:
-        'Tai yra jūsų užklausa, o ne patvirtintas užsakymas. Užsakymas patvirtinamas suderinus kainą ir kelionės informaciją.',
+        'Tai yra Jūsų užklausa, o ne patvirtintas užsakymas. Užsakymas patvirtinamas suderinus kainą ir kelionės informaciją.',
     },
   },
 

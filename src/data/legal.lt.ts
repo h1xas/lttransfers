@@ -53,11 +53,11 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           { type: 'ul', items: ['pageidaujamą automobilį', 'skrydžio numerį', 'pastabas apie kelionę'] },
           {
             type: 'p',
-            text: 'Formoje neprašome slaptažodžio, mokėjimo kortelės duomenų, asmens tapatybės dokumentų, gimimo datos ar pilietybės, o kliento paskyra nekuriama. Pastabų laukas yra laisvo teksto, todėl tai, ką jame rašote, priklauso nuo jūsų. Prašome nurodyti tik tai, kas svarbu kelionei.',
+            text: 'Formoje neprašome slaptažodžio, mokėjimo kortelės duomenų, asmens tapatybės dokumentų, gimimo datos ar pilietybės, o kliento paskyra nekuriama. Pastabų laukas yra laisvo teksto, todėl tai, ką jame rašote, priklauso nuo Jūsų. Prašome nurodyti tik tai, kas svarbu kelionei.',
           },
           {
             type: 'p',
-            text: 'Jei susisiekiate telefonu, per WhatsApp ar el. paštu, gauname informaciją, kuria pasidalijate pokalbio metu, pavyzdžiui, jūsų vardą, numerį ar adresą.',
+            text: 'Jei susisiekiate telefonu, per WhatsApp ar el. paštu, gauname informaciją, kuria pasidalijate pokalbio metu, pavyzdžiui, Jūsų vardą, numerį ar adresą.',
           },
           {
             type: 'p',
@@ -73,12 +73,12 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           {
             type: 'ul',
             items: [
-              'atsakytume į jūsų pervežimo užklausą',
+              'atsakytume į Jūsų pervežimo užklausą',
               'patikrintume, ar kelionė galima',
               'parengtume ir pateiktume kainos pasiūlymą',
-              'suderintume su jumis kelionės informaciją',
-              'patvirtintume ir suteiktume jūsų užsakytą pervežimą',
-              'bendrautume su jumis dėl šios užklausos ar užsakymo',
+              'suderintume su Jumis kelionės informaciją',
+              'patvirtintume ir suteiktume Jūsų užsakytą pervežimą',
+              'bendrautume su Jumis dėl šios užklausos ar užsakymo',
               'įvykdytume apskaitos ir kitus teisinius įpareigojimus, kai jie taikomi',
             ],
           },
@@ -91,7 +91,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
         blocks: [
           {
             type: 'p',
-            text: 'Kai prašote pervežimo, jūsų informaciją tvarkome, nes tai būtina norint jūsų prašymu imtis veiksmų prieš sudarant sutartį, o pervežimą suderinus – sutarčiai vykdyti (BDAR 6 straipsnio 1 dalies b punktas).',
+            text: 'Kai prašote pervežimo, Jūsų informaciją tvarkome, nes tai būtina norint Jūsų prašymu imtis veiksmų prieš sudarant sutartį, o pervežimą suderinus – sutarčiai vykdyti (BDAR 6 straipsnio 1 dalies b punktas).',
           },
           {
             type: 'p',
@@ -110,7 +110,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           {
             type: 'ul',
             items: [
-              'Formspree – formų pateikimo paslauga. Kai išsiunčiate pervežimo užklausos formą, jūsų įvesti duomenys perduodami per Formspree, kuri juos el. paštu pristato mums, kad galėtume atsakyti. Formspree taip pat gali saugoti pateikimo kopiją ir techninę informaciją, pavyzdžiui, jūsų IP adresą, atsižvelgiant į tai, kaip sukonfigūruota mūsų paskyra pas šį teikėją.',
+              'Formspree – formų pateikimo paslauga. Kai išsiunčiate pervežimo užklausos formą, Jūsų įvesti duomenys perduodami per Formspree, kuri juos el. paštu pristato mums, kad galėtume atsakyti. Formspree taip pat gali saugoti pateikimo kopiją ir techninę informaciją, pavyzdžiui, Jūsų IP adresą, atsižvelgiant į tai, kaip sukonfigūruota mūsų paskyra pas šį teikėją.',
               'Cloudflare – svetainės talpinimo ir pateikimo (svetainės talpinimo ir infrastruktūros) paslauga.',
             ],
           },
@@ -126,7 +126,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
         blocks: [
           {
             type: 'p',
-            text: 'Asmens duomenis saugome tik tiek, kiek būtina jūsų užklausai išnagrinėti, paslaugai suteikti, susijusiems klausimams išspręsti ir taikomiems teisiniams ar apskaitos reikalavimams įvykdyti. Jei skirtingiems įrašams taikomi skirtingi teisiniai saugojimo reikalavimai, saugojimo laiką gali lemti būtent šie reikalavimai.',
+            text: 'Asmens duomenis saugome tik tiek, kiek būtina Jūsų užklausai išnagrinėti, paslaugai suteikti, susijusiems klausimams išspręsti ir taikomiems teisiniams ar apskaitos reikalavimams įvykdyti. Jei skirtingiems įrašams taikomi skirtingi teisiniai saugojimo reikalavimai, saugojimo laiką gali lemti būtent šie reikalavimai.',
           },
           {
             type: 'p',
@@ -142,7 +142,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           {
             type: 'ul',
             items: [
-              'susipažinti su jūsų asmens duomenimis, kuriuos turime',
+              'susipažinti su Jūsų asmens duomenimis, kuriuos turime',
               'reikalauti ištaisyti netikslius duomenis',
               'reikalauti ištrinti duomenis',
               'apriboti duomenų tvarkymą',
@@ -152,7 +152,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           },
           {
             type: 'p',
-            text: `Norėdami pasinaudoti šiomis teisėmis, rašykite adresu ${emailLink}. Prieš imdamiesi veiksmų galime paprašyti patvirtinti jūsų tapatybę.`,
+            text: `Norėdami pasinaudoti šiomis teisėmis, rašykite adresu ${emailLink}. Prieš imdamiesi veiksmų galime paprašyti patvirtinti Jūsų tapatybę.`,
           },
           {
             type: 'p',
@@ -170,7 +170,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           },
           {
             type: 'p',
-            text: 'Kad užklausos forma atsidarytų su jau įvesta kelione, svetainė jūsų naršyklės sesijos atmintyje (session storage) išsaugo laukų „Iš“, „Į“ ir „Data“ reikšmes. Ši informacija lieka jūsų naršyklėje, išnyksta uždarius skirtuką ir mums nesiunčiama, nebent išsiųstumėte užklausą.',
+            text: 'Kad užklausos forma atsidarytų su jau įvesta kelione, svetainė Jūsų naršyklės sesijos atmintyje (session storage) išsaugo laukų „Iš“, „Į“ ir „Data“ reikšmes. Ši informacija lieka Jūsų naršyklėje, išnyksta uždarius skirtuką ir mums nesiunčiama, nebent išsiųstumėte užklausą.',
           },
         ],
       },
@@ -257,8 +257,8 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
             items: [
               'Atsiunčiate kelionės informaciją.',
               'Patikriname užklausą ir galimybes.',
-              'Pranešame jums kainą ir svarbią kelionės informaciją.',
-              'Su jumis suderiname kainą ir kelionės informaciją.',
+              'Pranešame Jums kainą ir svarbią kelionės informaciją.',
+              'Su Jumis suderiname kainą ir kelionės informaciją.',
               'Tada užsakymą patvirtiname raštu.',
             ],
           },
@@ -278,12 +278,12 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
           },
           {
             type: 'p',
-            text: 'Tiksli kaina derinama su jumis individualiai. Ji priklauso nuo tokių veiksnių kaip maršrutas, pageidaujamas automobilis ir kelionės informacija. Užsakymas patvirtinamas tik tada, kai suderinama kaina ir kelionės informacija.',
+            text: 'Tiksli kaina derinama su Jumis individualiai. Ji priklauso nuo tokių veiksnių kaip maršrutas, pageidaujamas automobilis ir kelionės informacija. Užsakymas patvirtinamas tik tada, kai suderinama kaina ir kelionės informacija.',
           },
           { type: 'p', text: 'Atsiskaityti galite grynaisiais, kortele arba banko pavedimu. Išrašome sąskaitas.' },
           {
             type: 'p',
-            text: 'MKT PASLAUGOS šiuo metu nėra PVM mokėtoja, todėl įprastoje sąskaitoje PVM nenurodomas. Jei jums būtina PVM sąskaita faktūra, ją galima parengti atskirai – apie tai praneškite savo užklausoje.',
+            text: 'MKT PASLAUGOS šiuo metu nėra PVM mokėtoja, todėl įprastoje sąskaitoje PVM nenurodomas. Jei Jums būtina PVM sąskaita faktūra, ją galima parengti atskirai – apie tai praneškite savo užklausoje.',
           },
         ],
       },
@@ -303,7 +303,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
         blocks: [
           {
             type: 'p',
-            text: 'Prašome nurodyti tikslią kelionės ir kontaktinę informaciją, kad galėtume suorganizuoti jūsų pervežimą. Paprastai tai:',
+            text: 'Prašome nurodyti tikslią kelionės ir kontaktinę informaciją, kad galėtume suorganizuoti Jūsų pervežimą. Paprastai tai:',
           },
           {
             type: 'ul',
@@ -311,7 +311,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
               'maršrutas',
               'data',
               'keleivių skaičius',
-              'jūsų kontaktiniai duomenys',
+              'Jūsų kontaktiniai duomenys',
               'skrydžio numeris, kai aktualu',
               'kita svarbi kelionės informacija, pavyzdžiui, bagažas ar papildomas sustojimas',
             ],
@@ -330,7 +330,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
         blocks: [
           {
             type: 'p',
-            text: 'Šios sąlygos neriboja jokių jūsų, kaip vartotojo, teisių, kurias nustato privalomosios vartotojų teisių apsaugos normos.',
+            text: 'Šios sąlygos neriboja jokių Jūsų, kaip vartotojo, teisių, kurias nustato privalomosios vartotojų teisių apsaugos normos.',
           },
         ],
       },
@@ -340,7 +340,7 @@ export const lt: Record<LegalSlug, LegalPageContent> = {
         blocks: [
           {
             type: 'p',
-            text: 'Kaip naudojame jūsų atsiųstą asmeninę informaciją, paaiškinta [Privatumo politikoje](/privacy/).',
+            text: 'Kaip naudojame Jūsų atsiųstą asmeninę informaciją, paaiškinta [Privatumo politikoje](/privacy/).',
           },
         ],
       },

@@ -15,7 +15,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
       'Privatūs iš anksto užsakomi pervežimai iš ir į Vilniaus, Kauno, Palangos, Rygos ir Varšuvos oro uostus. Atsiųskite maršrutą ir datą – pateiksime kainos pasiūlymą.',
     h1: 'Pervežimai iš ir į oro uostus',
     lead: 'Privatūs iš anksto užsakomi pervežimai į oro uostus ir iš jų Lietuvoje, Latvijoje ir Lenkijoje.',
-    support: 'Paėmimo laiką ir vietą suderiname su jumis iš anksto.',
+    support: 'Paėmimo laiką ir vietą suderiname su Jumis iš anksto.',
     sections: [
       {
         id: 'how-it-works',
@@ -80,7 +80,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
       },
       {
         question: 'Kaip nustatomas paėmimo laikas?',
-        answer: 'Paėmimo laiką suderiname su jumis kartu su kita kelionės informacija.',
+        answer: 'Paėmimo laiką suderiname su Jumis kartu su kita kelionės informacija.',
       },
     ],
     related: ['business-vip-transfers', 'cross-border'],
@@ -118,7 +118,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
             type: 'rows',
             rows: [
               { term: 'Sąskaitos', text: 'Išrašomos.' },
-              { term: 'Apmokėjimas', text: 'Grynieji · kortelė · pavedimas.' },
+              { term: 'Apmokėjimas', text: 'Grynieji, kortelė, pavedimas.' },
               {
                 term: 'Pageidaujamas automobilis',
                 text: 'Nurodykite pageidaujamą automobilį. Jį patvirtinsime pateikdami kainos pasiūlymą.',
@@ -166,7 +166,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
           {
             type: 'prose',
             paragraphs: [
-              'Tarpmiestinis pervežimas – tai privatus pervežimas iš jūsų paėmimo adreso iki paskirties vietos.',
+              'Tarpmiestinis pervežimas – tai privatus pervežimas iš Jūsų paėmimo adreso iki paskirties vietos.',
             ],
           },
         ],
@@ -200,7 +200,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
       },
       {
         question: 'Kaip nustatoma kaina?',
-        answer: 'Kaina derinama individualiai, gavus jūsų užklausą. Kainą suderiname prieš patvirtindami užsakymą.',
+        answer: 'Kaina derinama individualiai, gavus Jūsų užklausą. Kainą suderiname prieš patvirtindami užsakymą.',
       },
       {
         question: 'Ar keli keleiviai gali keliauti kartu?',
@@ -257,7 +257,7 @@ export const lt: Record<ServiceSlug, ServicePageContent> = {
       },
       {
         question: 'Kaip suderinama kaina?',
-        answer: 'Individualiai, gavus jūsų užklausą. Užsakymas patvirtinamas, kai suderiname kainą ir kelionės informaciją.',
+        answer: 'Individualiai, gavus Jūsų užklausą. Užsakymas patvirtinamas, kai suderiname kainą ir kelionės informaciją.',
       },
       {
         question: 'Ar galiu nurodyti pageidaujamą automobilį?',

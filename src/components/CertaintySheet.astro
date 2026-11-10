@@ -96,7 +96,7 @@ const contacts = [
           <p class="text">
             {c.facts.countries.places.map((place, i, all) => (
               <>
-                <span class="place">{place}{i < all.length - 1 ? ' ·' : ''}</span>{i < all.length - 1 ? ' ' : ''}
+                <span class="place">{place}{i < all.length - 1 ? ',' : ''}</span>{i < all.length - 1 ? ' ' : ''}
               </>
             ))}
           </p>

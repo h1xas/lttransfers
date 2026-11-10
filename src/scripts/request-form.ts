@@ -460,7 +460,7 @@ function init(form: HTMLFormElement, cfg: Config) {
       [s.rows.vehicle, cfg.vehicles[p.vehicle] ?? p.vehicle],
     ];
     if (p.flight) rows.push([s.rows.flight, p.flight]);
-    rows.push([s.rows.contact, `${copy.methods[p.method].option} · ${p.contact}`]);
+    rows.push([s.rows.contact, `${copy.methods[p.method].option}, ${p.contact}`]);
     if (p.notes) rows.push([s.rows.notes, p.notes]);
 
     const ledger = document.querySelector<HTMLElement>('[data-ledger]')!;
