@@ -25,6 +25,7 @@ export interface RequestDraft {
   method: Method | '';
   contact: string;
   notes?: string;
+  femaleDriver?: true;
   lang: Lang;
 }
 
@@ -74,5 +75,6 @@ export function normalizeRequest(raw: RawRequest): RequestDraft {
   if (flight && isAirportJourney(from, to)) draft.flight = flight;
   const notes = cleanNotes(raw.notes);
   if (notes) draft.notes = notes;
+  if (raw.femaleDriver === true) draft.femaleDriver = true; // a boolean preference: only an explicit `true` counts
   return draft;
 }

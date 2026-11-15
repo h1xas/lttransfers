@@ -182,6 +182,7 @@ export const lt: Ui = {
       'e-class': { descriptor: 'Verslo klasės sedanas', note: 'Rafinuotas sedanas ilgesnėms kelionėms.' },
       a8: { descriptor: 'Verslo klasės sedanas', note: 'Erdvus sedanas ilgesnėms kelionėms.' },
       berlingo: { descriptor: 'MPV', note: 'Praktiškas ir erdvus pasirinkimas.' },
+      'v-class': { descriptor: 'MPV', note: 'Vietos grupėms ir bagažui.' },
     },
     footnote: {
       before: 'Nežinote, kurį pasirinkti? Užklausoje pažymėkite „',
@@ -215,6 +216,14 @@ export const lt: Ui = {
     contactLabel: 'Susisiekite su LTTransfers',
     whatsappValue: 'Rašykite per WhatsApp',
     email: 'El. paštas',
+  },
+
+  womanToWoman: {
+    eyebrow: 'Woman to Woman',
+    title: 'Kelionė pagal Jūsų pasirinkimą.',
+    body: 'Pageidaujate keliauti su vairuotoja moterimi? Keleivės gali tai nurodyti pateikdamos kelionės užklausą. Galimybę patvirtinsime prieš patvirtinant užsakymą.',
+    cta: 'Gauti pasiūlymą',
+    imageAlt: 'Vairuotoja su keleive prieš privatų pervežimą',
   },
 
   services: {
@@ -309,6 +318,13 @@ export const lt: Ui = {
         answer:
           'Taip. Pervežimą galite suorganizuoti kitam keleiviui. Atsiųskite jo kelionės informaciją ir telefono numerį, kuriuo prireikus galėtume susisiekti.',
       },
+      {
+        key: 'female-driver',
+        status: 'confirmed',
+        question: 'Ar galiu paprašyti vairuotojos moters?',
+        answer:
+          'Taip. Keleivės gali to paprašyti pateikdamos kelionės užklausą. Galimybę patvirtinsime prieš patvirtinant užsakymą.',
+      },
     ],
   },
 
@@ -360,6 +376,10 @@ export const lt: Ui = {
       contact: 'Kaip su Jumis susisiekti?',
     },
     journeyNote: 'Tikslų paėmimo laiką ir adresą galėsime suderinti vėliau.',
+    femaleDriver: {
+      label: 'Pageidauju vairuotojos moters',
+      recap: 'Pageidaujama vairuotoja moteris',
+    },
     passengers: {
       label: 'Keleiviai',
       decrease: 'Sumažinti keleivių skaičių',
@@ -445,6 +465,7 @@ export const lt: Ui = {
         date: 'Data',
         passengers: 'Keleiviai',
         vehicle: 'Automobilis',
+        driver: 'Vairuotojas',
         flight: 'Skrydis',
         contact: 'Kontaktas',
         notes: 'Pastabos',

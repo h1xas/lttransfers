@@ -65,6 +65,7 @@ export function toFormspreeFields(request: RequestPayload): Record<string, strin
     'Vehicle preference': vehicleName(request.vehicle),
   };
   if (request.flight) fields['Flight number'] = cleanLine(request.flight);
+  if (request.femaleDriver) fields['Driver preference'] = 'Female driver';
   fields['Preferred contact'] = METHOD_LABEL[request.method];
   fields.Contact = contact;
   if (request.notes?.trim()) fields.Notes = request.notes.trim();

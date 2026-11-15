@@ -25,6 +25,8 @@ export interface RequestPayload {
   /** The one contact value that matches `method`. */
   contact: string;
   notes?: string;
+  /** Optional driver preference. Present (as `true`) only when the visitor asked for a female driver. */
+  femaleDriver?: true;
   lang: Lang;
 }
 

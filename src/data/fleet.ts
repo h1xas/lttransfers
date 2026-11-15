@@ -1,5 +1,5 @@
 /*
-  The five vehicles, in display order. Names are proper nouns and are not translated;
+  The six vehicles, in display order. Names are proper nouns and are not translated;
   descriptors and character lines live in data/ui.ts (`cars.vehicles`, keyed by `id`).
 
   `brand` / `model` are split only so the name can break between them. The full
@@ -19,6 +19,7 @@ export const fleet: Vehicle[] = [
   { id: 'e-class', brand: 'Mercedes-Benz', model: 'E-Class', request: 'mercedes-benz-e-class' },
   { id: 'a8', brand: 'Audi', model: 'A8', request: 'audi-a8' },
   { id: 'berlingo', brand: 'Citroën', model: 'Berlingo Multispace', request: 'citroen-berlingo-multispace' },
+  { id: 'v-class', brand: 'Mercedes-Benz', model: 'V-Class', request: 'mercedes-benz-v-class' },
 ];
 
 /** The request flow's "no specific vehicle" value ("Recommend a vehicle"). */

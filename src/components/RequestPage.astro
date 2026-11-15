@@ -59,6 +59,7 @@ const config = {
     errors: r.errors,
     methods: r.methods,
     passengersLabel: r.passengers.label,
+    femaleDriver: r.femaleDriver,
     flight: r.flight,
     notes: r.notes,
     submit: r.submit,
@@ -181,6 +182,16 @@ const config = {
                 />
                 <p class="err" id="req-flight-err" hidden></p>
               </div>
+            </div>
+
+            <!-- Optional driver preference (the homepage's Woman to Woman section links here with ?femaleDriver=true). -->
+            <div class="row row--single row--pref">
+              <label class="pref">
+                <input type="checkbox" id="req-female" name="femaleDriver" value="true" data-female-driver />
+                <span class="pref-box" aria-hidden="true"></span>
+                <span class="pref-text">{r.femaleDriver.label}</span>
+                <span class="opt">{r.optional}</span>
+              </label>
             </div>
           </div>
           <p class="micro">{r.journeyNote}</p>
@@ -440,6 +451,10 @@ const config = {
       });
       var qd = params.get('date');
       date.value = validDate(qd) ? qd : validDate(stored.date) ? stored.date : '';
+
+      // Driver preference: a boolean, URL-only. Absent (or anything but "true") leaves the box unticked.
+      var female = get('req-female');
+      if (female && params.get('femaleDriver') === 'true') female.checked = true;
 
       var wanted = (params.get('vehicle') || '').trim().toLowerCase();
       var vehicle = get('req-vehicle');

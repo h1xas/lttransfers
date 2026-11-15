@@ -1,14 +1,14 @@
 ---
 /*
-  The cars: "the fleet sheet". Five photographs, one controlled set.
+  The cars: "the fleet sheet". Six photographs, one controlled set.
 
   Every photograph is prepared to the same frame (same angle, direction, light, scale),
-  so all five share one image treatment: one aspect ratio, `object-fit: cover` and one
+  so all six share one image treatment: one aspect ratio, `object-fit: cover` and one
   `object-position`. Nothing is stretched, and nothing is positioned per vehicle.
   The crop is horizontal only (16:9 source into 16:10), inside the empty margin the
   frame leaves on both sides of every car, so no wheel, mirror or bumper is cut.
 
-  Desktop (≥1200px): three vehicles across, two centred beneath them, the footnote centred below
+  Desktop (≥1200px): three vehicles across, three more beneath them, the footnote centred below
   those. Each vehicle is one cell of a wrapping flex row: all photographs are exactly one width, and
   cells in a row are as tall as the tallest.
   768–1199px: a list, one vehicle per row, photograph left, text right.
@@ -29,6 +29,7 @@ import cClass from '../assets/fleet/mercedes-benz-c-class.png';
 import eClass from '../assets/fleet/mercedes-benz-e-class.png';
 import a8 from '../assets/fleet/audi-a8.png';
 import berlingo from '../assets/fleet/citroen-berlingo-multispace.png';
+import vClass from '../assets/fleet/mercedes-benz-v-class.png';
 
 interface Props {
   lang: Lang;
@@ -41,6 +42,7 @@ const photos: Record<string, ImageMetadata> = {
   'e-class': eClass,
   a8,
   berlingo,
+  'v-class': vClass,
 };
 
 const { lang } = Astro.props;
@@ -167,7 +169,7 @@ const vehicles = fleet.map((v) => {
     background: color-mix(in srgb, var(--graphite) 6%, transparent);
   }
 
-  /* The one image treatment, shared by all five vehicles. */
+  /* The one image treatment, shared by all six vehicles. */
   .art {
     grid-column: 1 / -1;
     grid-row: 1;
@@ -298,7 +300,7 @@ const vehicles = fleet.map((v) => {
     }
   }
 
-  /* ---------- Desktop sheet: three across, two centred beneath, one controlled set ---------- */
+  /* ---------- Desktop sheet: three across, two rows, one controlled set ---------- */
   @media (min-width: 1200px) {
     .sheet {
       --pad: clamp(20px, 2.2vw, 36px);
@@ -326,14 +328,15 @@ const vehicles = fleet.map((v) => {
       border-top: 0;
       --pl: var(--pad);
     }
-    .vehicle:first-child {
+    /* The first cell of each row is flush with the heading. */
+    .vehicle:is(:nth-child(1), :nth-child(4)) {
       flex-basis: calc(var(--photo) + var(--pad));
-      --pl: 0px; /* flush with the heading */
+      --pl: 0px;
     }
     .vehicle:nth-child(n + 4) {
       order: 2;
     }
-    .vehicle:is(:nth-child(2), :nth-child(3), :nth-child(5)) {
+    .vehicle:is(:nth-child(2), :nth-child(3), :nth-child(5), :nth-child(6)) {
       flex-basis: calc(var(--photo) + 2 * var(--pad) + 1px);
       border-left: 1px solid var(--hairline);
     }
@@ -350,7 +353,7 @@ const vehicles = fleet.map((v) => {
       outline-offset: -3px;
     }
     /* The first column's text is flush with the heading (no left padding): its ring sits outside the text, not across it. */
-    .vehicle:first-child .link:focus-visible {
+    .vehicle:is(:nth-child(1), :nth-child(4)) .link:focus-visible {
       outline-offset: 6px;
     }
     .link:active {

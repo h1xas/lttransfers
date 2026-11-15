@@ -66,6 +66,7 @@ A JSON object with readable keys, so the notification email reads as a form. Emp
 | `Passengers` | `1`–`8` or `8+` |
 | `Vehicle preference` | `Mercedes-Benz E-Class`, or `Recommend a vehicle` |
 | `Flight number` | only for an airport journey, and only if given |
+| `Driver preference` | `Female driver`, only when the visitor ticked "I would prefer a female driver" |
 | `Preferred contact` | `WhatsApp`, `Phone` or `Email` |
 | `Contact` | the phone number or email address |
 | `Notes` | only if given |

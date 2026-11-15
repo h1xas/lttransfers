@@ -198,6 +198,7 @@ const en = {
       'e-class': { descriptor: 'Executive saloon', note: 'A refined saloon for longer journeys.' },
       a8: { descriptor: 'Executive saloon', note: 'A spacious saloon for longer journeys.' },
       berlingo: { descriptor: 'MPV', note: 'A practical, spacious option.' },
+      'v-class': { descriptor: 'MPV', note: 'Room for groups and luggage.' },
     } as Record<string, { descriptor: string; note: string }>,
     footnote: {
       before: 'Not sure which to choose? Select “',
@@ -274,6 +275,18 @@ const en = {
   },
 
   /*
+    Woman to Woman: a journey preference, not a fifth service. The eyebrow keeps the service name in both
+    languages. The CTA opens the request page with `?femaleDriver=true` (a boolean; no personal data in the URL).
+  */
+  womanToWoman: {
+    eyebrow: 'Woman to Woman',
+    title: 'A journey that feels right for you.',
+    body: 'Prefer to travel with a female driver? Female passengers can request a female driver when sending their journey details. Availability is confirmed before the booking.',
+    cta: 'Request a price',
+    imageAlt: 'Female driver with a passenger for a private transfer',
+  },
+
+  /*
     FAQ. Plain-text answers (no markup) so the same items can feed FAQPage JSON-LD in the final SEO pass.
     Only `confirmed` items render. A `tbc` item stays in the data but never reaches the page. Child seats
     ("Do you have child seats?") is tbc until the business confirms it: it is deliberately NOT listed here;
@@ -335,6 +348,13 @@ const en = {
         question: 'Can I book for someone else?',
         answer:
           'Yes. You can arrange the transfer for another passenger. Send us their journey details and a contact number we can use if needed.',
+      },
+      {
+        key: 'female-driver',
+        status: 'confirmed',
+        question: 'Can I request a female driver?',
+        answer:
+          'Yes. Female passengers can request a female driver when sending their journey details. Availability is confirmed before the booking.',
       },
     ] as { key: string; status: 'confirmed' | 'tbc'; question: string; answer: string }[],
   },
@@ -400,6 +420,11 @@ const en = {
       contact: 'How should we contact you?',
     },
     journeyNote: 'Pickup time and exact address can be agreed later.',
+    // Optional driver preference (see `womanToWoman`). Availability is confirmed before the booking.
+    femaleDriver: {
+      label: 'I would prefer a female driver',
+      recap: 'Female driver preferred',
+    },
     passengers: {
       label: 'Passengers',
       decrease: 'Decrease passengers',
@@ -487,6 +512,7 @@ const en = {
         date: 'Date',
         passengers: 'Passengers',
         vehicle: 'Vehicle',
+        driver: 'Driver',
         flight: 'Flight',
         contact: 'Contact',
         notes: 'Notes',

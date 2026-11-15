@@ -1,0 +1,228 @@
+---
+/*
+  Woman to Woman: a journey preference, not a fifth service. A quiet editorial split that sits between
+  "Where we go" and the FAQ: copy on the left, one photograph on the right. No card, no icon, no tint: it
+  stays on the page's stone, with the same label / 2px-rule / hairline vocabulary as its neighbours. The only
+  wayfinding detail is a thin route line (dot, 1px line, dot) under the eyebrow.
+
+  Desktop (≥1100px): copy c1–5, one column of air, photograph c7–12 (4:5, right-aligned, capped at 34rem).
+  Tablet (768–1099px): stacked, copy then photograph set to the right (c4–8): the copy never gets narrow.
+  Phone: eyebrow → heading → body → link → photograph. The words always come before the picture.
+
+  The link goes to /request/ with `?femaleDriver=true`: a boolean, nothing personal. The request page ticks
+  "I would prefer a female driver" from it (RequestPage.astro).
+
+  Not in the navigation and not a page of its own: it is homepage content only.
+*/
+import { Picture } from 'astro:assets';
+import ArrowIcon from './ArrowIcon.astro';
+import photo from '../assets/images/woman-to-woman-transfer.png';
+import type { Lang } from '../data/ui';
+import { getUi, localePath } from '../utils/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getUi(lang);
+const w = t.womanToWoman;
+const href = `${localePath(lang, '/request/')}?femaleDriver=true`;
+---
+
+<section class="w2w" aria-labelledby="w2w-title">
+  <div class="page-grid">
+    <div class="copy">
+      <p class="label eyebrow">{w.eyebrow}</p>
+      <span class="route" aria-hidden="true"></span>
+      <h2 id="w2w-title">{w.title}</h2>
+      <p class="body">{w.body}</p>
+      <a class="cta" href={href}>
+        <span>{w.cta}</span>
+        <ArrowIcon class="cta-arrow" width={22} />
+      </a>
+    </div>
+
+    <figure class="photo">
+      <!-- Illustrative photograph. Source is 4:5, so the frame shows it uncropped; lazy because it sits far below the fold
+           and the frame has a fixed ratio, so nothing shifts when it arrives. -->
+      <Picture
+        src={photo}
+        alt={w.imageAlt}
+        formats={['avif', 'webp']}
+        fallbackFormat="jpeg"
+        quality={72}
+        widths={[480, 720, 1000]}
+        sizes="(min-width: 1100px) 46vw, (min-width: 768px) 56vw, calc(100vw - 40px)"
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+  </div>
+</section>
+
+<style>
+  /*
+    "Where we go" ends with its own bottom padding, so this section starts straight after it (the FAQ does the
+    same). The bottom is generous: the FAQ that follows opens on a 2px rule, which needs clear air above it.
+  */
+  .w2w {
+    background: var(--stone);
+    color: var(--graphite);
+    padding-block: var(--space-2) clamp(64px, 7.2vw, 104px);
+  }
+
+  .copy {
+    grid-column: 1 / -1;
+  }
+
+  .eyebrow {
+    color: var(--graphite-2);
+  }
+
+  /* Route line: ●────● in one element. Two 7px pine endpoints joined by a 1px line. */
+  .route {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 76px;
+    height: 7px;
+    margin-top: 14px;
+    color: var(--pine);
+    background: linear-gradient(currentColor, currentColor) center / calc(100% - 14px) 1px no-repeat;
+  }
+  .route::before,
+  .route::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  h2 {
+    margin-top: var(--space-3);
+    font-size: var(--fs-display-l);
+    line-height: var(--lh-display);
+    letter-spacing: var(--track-display);
+    text-wrap: balance;
+  }
+
+  .body {
+    max-width: 30rem;
+    margin-top: var(--space-2);
+    color: var(--graphite-2);
+    font-size: var(--fs-body-l);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* The compact request link used elsewhere: medium-weight label, underline, pine arrow that nudges on hover. */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap);
+    margin-top: var(--space-2);
+    font-size: var(--fs-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+  }
+  .cta :global(.cta-arrow) {
+    flex: none;
+    color: var(--pine);
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  @media (hover: hover) {
+    .cta:hover :global(.cta-arrow) {
+      transform: translateX(4px);
+    }
+  }
+
+  /* ---------- Photograph ---------- */
+  .photo {
+    grid-column: 1 / -1;
+    margin: var(--space-4) 0 0;
+    aspect-ratio: 4 / 5;
+    position: relative;
+    overflow: hidden;
+    background: var(--stone-2); /* holds the space while the image loads */
+  }
+  .photo :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 55%;
+  }
+
+  @media (max-width: 767px) {
+    /* "Where we go" is 56px tighter on phones, so this section's own top air is a little longer there. */
+    .w2w {
+      padding-top: var(--space-3);
+    }
+  }
+
+  /* ---------- Tablet: stacked; the photograph is set to the right so the copy keeps its full width ---------- */
+  @media (min-width: 768px) {
+    .w2w {
+      padding-top: var(--space-4);
+    }
+    h2 {
+      font-size: clamp(2.25rem, 4.4vw, 3rem);
+      max-width: 14em;
+    }
+    .copy {
+      grid-column: 1 / 8;
+    }
+    /* Capped so a 1024px screen does not get a 580px-wide, 720px-tall photograph. */
+    .photo {
+      grid-column: 4 / -1;
+      justify-self: end;
+      width: 100%;
+      max-width: 26rem;
+      margin-top: var(--space-5);
+    }
+  }
+
+  /* ---------- Desktop: copy c1–5 · air · photograph c7–12 ---------- */
+  @media (min-width: 1100px) {
+    .w2w {
+      padding-top: 0;
+    }
+    .copy {
+      grid-column: 1 / 6;
+      grid-row: 1;
+      align-self: center;
+    }
+    .eyebrow {
+      font-size: 0.875rem;
+    }
+    h2 {
+      max-width: none;
+      font-size: clamp(2.75rem, 4.1vw, 4rem);
+    }
+    .body {
+      max-width: 32rem;
+      font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+    }
+    .cta {
+      font-size: 0.875rem;
+    }
+    /* Six columns are reserved, but the frame stops at ~34rem and sits on the right edge: at 1440 a full six-column
+       4:5 photograph is 785px tall, taller than the viewport and louder than the hero. This is as tall as Included's. */
+    .photo {
+      grid-column: 7 / -1;
+      grid-row: 1;
+      justify-self: end;
+      width: 100%;
+      max-width: 34rem;
+      margin-top: 0;
+    }
+  }
+</style>

@@ -40,6 +40,7 @@ interface Config {
       fieldChanged: string;
     };
     passengersLabel: string;
+    femaleDriver: { label: string; recap: string };
     flight: { added: string; removed: string };
     notes: { shortened: string; remaining: string; limit: string };
     submit: string;
@@ -49,7 +50,7 @@ interface Config {
       title: string;
       documentTitle: string;
       text: string;
-      rows: Record<'journey' | 'date' | 'passengers' | 'vehicle' | 'flight' | 'contact' | 'notes', string>;
+      rows: Record<'journey' | 'date' | 'passengers' | 'vehicle' | 'driver' | 'flight' | 'contact' | 'notes', string>;
     };
   };
 }
@@ -73,6 +74,7 @@ function init(form: HTMLFormElement, cfg: Config) {
   const paxMore = q<HTMLElement>('#req-pax-more');
   const flightRow = q<HTMLElement>('[data-flight-row]');
   const flightInput = q<HTMLInputElement>('#req-flight');
+  const femaleInput = q<HTMLInputElement>('#req-female');
   const vehicleInput = q<HTMLInputElement>('#req-vehicle'); // hidden: the real `vehicle` value
   initVehicleSelect(q<HTMLElement>('[data-vehicle-select]'));
   const contactInput = q<HTMLInputElement>('#req-contact');
@@ -368,6 +370,7 @@ function init(form: HTMLFormElement, cfg: Config) {
     date: dateInput.value,
     passengers: paxInput.value,
     vehicle: vehicleInput.value,
+    femaleDriver: femaleInput.checked,
     flight: flightInput.value, // dropped by normalisation unless the journey is airport-related
     method,
     contact: contactInput.value,
@@ -459,6 +462,7 @@ function init(form: HTMLFormElement, cfg: Config) {
       [s.rows.passengers, p.passengers],
       [s.rows.vehicle, cfg.vehicles[p.vehicle] ?? p.vehicle],
     ];
+    if (p.femaleDriver) rows.push([s.rows.driver, copy.femaleDriver.recap]);
     if (p.flight) rows.push([s.rows.flight, p.flight]);
     rows.push([s.rows.contact, `${copy.methods[p.method].option}, ${p.contact}`]);
     if (p.notes) rows.push([s.rows.notes, p.notes]);
