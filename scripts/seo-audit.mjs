@@ -27,6 +27,7 @@ const urlOf = (f) => '/' + rel(f).replace(/index\.html$/, '');
 
 const files = walk(dist);
 const pageFiles = files.filter((f) => f.endsWith('.html'));
+const localeOf = (url) => url.startsWith('/ru/') ? 'ru' : url.startsWith('/lt/') ? 'lt' : 'en';
 const isError = (url) => /\/404(\.html|\/)?$/.test(url);
 
 const pages = pageFiles.map((file) => {
@@ -50,7 +51,7 @@ const dup = (kind, value, url) => {
 for (const p of pages) {
   const { url, html, head } = p;
   const error = isError(url);
-  const expectLang = url.startsWith('/lt/') ? 'lt' : 'en';
+  const expectLang = localeOf(url);
 
   // ---- <html lang>
   const lang = html.match(/<html lang="([^"]+)"/)?.[1];
@@ -92,13 +93,13 @@ for (const p of pages) {
     dup('canonical', canonicals[0], url);
     if (attr(ogUrl ?? '', 'content') !== expected) fail(url, 'og:url is not the canonical');
 
-    const twin = (l) => (l === 'lt' ? '/lt' + (url.startsWith('/lt/') ? url.slice(3) : url) : url.startsWith('/lt/') ? url.slice(3) : url);
-    const want = { en: ORIGIN + twin('en'), lt: ORIGIN + twin('lt'), 'x-default': ORIGIN + twin('en') };
+    const twin = (l) => (l === 'en' ? '' : '/' + l) + url.replace(/^\/(lt|ru)(?=\/)/, '');
+    const want = { en: ORIGIN + twin('en'), lt: ORIGIN + twin('lt'), ru: ORIGIN + twin('ru'), 'x-default': ORIGIN + twin('en') };
     for (const [k, v] of Object.entries(want)) {
       const got = alternates.filter((a) => a.hreflang === k);
       if (got.length !== 1 || got[0].href !== v) fail(url, `hreflang ${k} is ${JSON.stringify(got.map((g) => g.href))}, expected ${v}`);
     }
-    if (alternates.length !== 3) fail(url, `${alternates.length} hreflang links, expected 3`);
+    if (alternates.length !== 4) fail(url, `${alternates.length} hreflang links, expected 4`);
     // reciprocity: the other language page must list this URL back
     for (const a of alternates.filter((x) => x.hreflang !== 'x-default')) {
       const other = byUrl.get(a.href.replace(ORIGIN, ''));
@@ -119,10 +120,11 @@ for (const p of pages) {
   if (decode(og('og:description') ?? '') !== description) fail(url, 'og:description differs from description');
   if (og('og:site_name') !== 'LTTransfers') fail(url, 'og:site_name');
   if (og('og:type') !== 'website') fail(url, 'og:type');
-  const ogLocale = expectLang === 'lt' ? ['lt_LT', 'en_US'] : ['en_US', 'lt_LT'];
+  const ogLocales = { en: 'en_US', lt: 'lt_LT', ru: 'ru_RU' };
+  const ogLocale = [ogLocales[expectLang], ...Object.entries(ogLocales).filter(([l]) => l !== expectLang).map(([, v]) => v)];
   if (og('og:locale') !== ogLocale[0]) fail(url, `og:locale ${og('og:locale')}`);
   const altLocales = metas.filter((t) => attr(t, 'property') === 'og:locale:alternate').map((t) => attr(t, 'content'));
-  if (altLocales.join() !== ogLocale[1]) fail(url, `og:locale:alternate ${altLocales}`);
+  if (altLocales.join() !== ogLocale.slice(1).join()) fail(url, `og:locale:alternate ${altLocales}`);
   const img = og('og:image');
   if (!img?.startsWith(ORIGIN + '/')) fail(url, `og:image not absolute on production origin: ${img}`);
   else {
@@ -160,7 +162,7 @@ for (const p of pages) {
   for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
     try {
       const j = JSON.parse(m[1]);
-      if (url !== '/' && url !== '/lt/') fail(url, 'JSON-LD outside homepage');
+      if (url !== '/' && url !== '/lt/' && url !== '/ru/') fail(url, 'JSON-LD outside homepage');
       if (j['@type'] !== 'Organization') fail(url, `unexpected JSON-LD type ${j['@type']}`);
       notes.push(`JSON-LD on ${url}: ${m[1]}`);
     } catch (e) {
@@ -192,7 +194,7 @@ for (const [kind, map] of Object.entries(seen)) for (const [v, urls] of map) if 
 const external = new Map();
 let internalCount = 0;
 for (const p of pages) {
-  const isLt = p.url.startsWith('/lt/');
+  const pageLang = localeOf(p.url);
   for (const t of tags(p.html, 'a')) {
     const raw = attr(t, 'href');
     if (raw === null) continue;
@@ -218,8 +220,7 @@ for (const p of pages) {
       continue;
     }
     if (isError(pathname) && !isSwitcher && !isError(p.url)) fail(p.url, `link to error page ${href}`);
-    if (isLt && !pathname.startsWith('/lt/') && !isSwitcher) fail(p.url, `LT page links to English page ${href}`);
-    if (!isLt && pathname.startsWith('/lt/') && !isSwitcher) fail(p.url, `EN page links to Lithuanian page ${href}`);
+    if (pageLang !== localeOf(pathname) && !isSwitcher) fail(p.url, `${pageLang.toUpperCase()} page links to another language ${href}`);
     if (u.hash) {
       const id = decodeURIComponent(u.hash.slice(1));
       const n = (target.html.match(new RegExp(`\\sid="${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g')) || []).length;

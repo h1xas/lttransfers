@@ -7,10 +7,12 @@
   names are data/locations.ts, on the same pattern.
 */
 import { lt } from './ui.lt';
+import { ru } from './ui.ru';
 
 export const languages = {
   en: { label: 'English', short: 'EN', htmlLang: 'en', ogLocale: 'en_US', ready: true },
   lt: { label: 'Lietuvių', short: 'LT', htmlLang: 'lt', ogLocale: 'lt_LT', ready: true },
+  ru: { label: 'Русский', short: 'RU', htmlLang: 'ru', ogLocale: 'ru_RU', ready: true },
 } as const;
 
 export type Lang = keyof typeof languages;
@@ -534,4 +536,4 @@ const en = {
 
 export type Ui = typeof en;
 
-export const ui: Record<Lang, Ui> = { en, lt };
+export const ui: Record<Lang, Ui> = { en, lt, ru };

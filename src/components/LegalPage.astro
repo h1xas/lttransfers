@@ -21,7 +21,7 @@ interface Props {
 
 const { lang, slug } = Astro.props;
 const page = getLegalPage(lang, slug);
-const updated = new Intl.DateTimeFormat(languages[lang].htmlLang === 'lt' ? 'lt-LT' : 'en-GB', {
+const updated = new Intl.DateTimeFormat(languages[lang].htmlLang === 'ru' ? 'ru-RU' : languages[lang].htmlLang === 'lt' ? 'lt-LT' : 'en-GB', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',

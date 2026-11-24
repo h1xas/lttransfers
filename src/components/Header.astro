@@ -526,6 +526,15 @@ const current = switchTo.find((l) => l.current)!;
     }
   }
 
+  @media (min-width: 1200px) {
+    :global(html[lang='ru']) .primary-nav {
+      margin-left: 0;
+    }
+    :global(html[lang='ru']) .primary-nav ul {
+      gap: 16px;
+    }
+  }
+
   @media (min-width: 1360px) {
     .primary-nav ul {
       gap: 24px;

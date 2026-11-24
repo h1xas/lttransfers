@@ -25,7 +25,7 @@ export function stripLocale(pathname: string): string {
   return pathname;
 }
 
-/** Strings for a language. Both languages are complete (Lithuanian is type-checked against English). */
+/** Strings for a language. All languages are complete (Lithuanian and Russian are type-checked against English). */
 export function getUi(lang: Lang): Ui {
   return ui[lang];
 }

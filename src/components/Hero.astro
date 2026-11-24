@@ -99,6 +99,9 @@ const hasFigure = availAfter !== undefined;
     font-weight: var(--weight-medium);
     text-wrap: balance;
   }
+  :global(html[lang="ru"]) .headline {
+  font-size: calc(var(--fs-display-xl) * 0.85);
+}
   .aside {
     grid-column: 1 / -1;
     margin-top: var(--space-2);

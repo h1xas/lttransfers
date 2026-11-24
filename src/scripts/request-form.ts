@@ -451,7 +451,7 @@ function init(form: HTMLFormElement, cfg: Config) {
     page.querySelector<HTMLElement>('.masthead')!.classList.add('is-entering');
 
     const [y, m, d] = p.date.split('-').map(Number);
-    const date = new Date(y, m - 1, d).toLocaleDateString(cfg.htmlLang === 'lt' ? 'lt-LT' : 'en-GB', {
+    const date = new Date(y, m - 1, d).toLocaleDateString(cfg.htmlLang === 'ru' ? 'ru-RU' : cfg.htmlLang === 'lt' ? 'lt-LT' : 'en-GB', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

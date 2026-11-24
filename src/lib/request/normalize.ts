@@ -56,7 +56,7 @@ export function parsePassengers(raw: string): Passengers | null {
   return (n >= 9 || (match[2] && n >= 8) ? '8+' : String(n)) as Passengers;
 }
 
-export const normalizeLang = (raw: unknown): Lang => (raw === 'lt' ? 'lt' : 'en');
+export const normalizeLang = (raw: unknown): Lang => (raw === 'ru' ? 'ru' : raw === 'lt' ? 'lt' : 'en');
 
 export function normalizeRequest(raw: RawRequest): RequestDraft {
   const from = cleanLine(raw.from);

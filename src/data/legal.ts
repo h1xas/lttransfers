@@ -9,6 +9,7 @@
     - Inline links use [label](href). A leading "/" is a language-relative page path (localePath adds /lt).
 */
 import { lt } from './legal.lt';
+import { ru } from './legal.ru';
 import { site } from './site';
 import type { Lang } from './ui';
 
@@ -383,7 +384,7 @@ const en: Record<LegalSlug, LegalPageContent> = {
   },
 };
 
-const pages: Record<Lang, Record<LegalSlug, LegalPageContent>> = { en, lt };
+const pages: Record<Lang, Record<LegalSlug, LegalPageContent>> = { en, lt, ru };
 
 export const legalSlugs: LegalSlug[] = ['privacy', 'terms'];
 

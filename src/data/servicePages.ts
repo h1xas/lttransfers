@@ -9,6 +9,7 @@
   English is below; Lithuanian is data/servicePages.lt.ts, same shape and the same sections. `getServicePage` picks by language.
 */
 import { lt } from './servicePages.lt';
+import { ru } from './servicePages.ru';
 import type { Lang } from './ui';
 
 export type ServiceSlug = 'airport-transfers' | 'business-vip-transfers' | 'long-distance' | 'cross-border';
@@ -309,7 +310,7 @@ const en: Record<ServiceSlug, ServicePageContent> = {
   },
 };
 
-const pages: Record<Lang, Record<ServiceSlug, ServicePageContent>> = { en, lt };
+const pages: Record<Lang, Record<ServiceSlug, ServicePageContent>> = { en, lt, ru };
 
 export const serviceSlugs = Object.keys(en) as ServiceSlug[];
 

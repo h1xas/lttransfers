@@ -6,7 +6,7 @@
 import { fold } from '../../utils/text';
 
 const AIRPORT =
-  /(?:^|[^\p{L}\p{N}])(?:vno|kun|plq|rix|tll|waw|wmi|airport|oro uost\p{L}*|lidosta\p{L}*|lennujaam\p{L}*|lotnisk\p{L}*)(?=$|[^\p{L}\p{N}])/u;
+  /(?:^|[^\p{L}\p{N}])(?:vno|kun|plq|rix|tll|waw|wmi|airport|oro uost\p{L}*|lidosta\p{L}*|lennujaam\p{L}*|lotnisk\p{L}*|аэропорт\p{L}*)(?=$|[^\p{L}\p{N}])/u;
 
 export const looksLikeAirport = (place: string) => AIRPORT.test(fold(place));
 
